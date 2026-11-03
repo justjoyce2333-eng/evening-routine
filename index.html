@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f7f4" />
+  <meta name="description" content="18:00—23:30，下班后的作息时间表。可切换洗头或不洗头安排，自定义时间块颜色，实时查看当前时间。" />
+  <title>晚间时间表</title>
+  <style>
+    :root {
+      --page: #f7f7f4;
+      --ink: #232a2e;
+      --muted: #87908c;
+      --line: #e9ece6;
+      --green: #426b57;
+      --red: #e44b4b;
+      --minute-height: 3.2px;
+      --plot-height: calc(330 * var(--minute-height));
+      --radius: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--page); -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #87aa95; outline-offset: 3px; }
+    .page { width: min(1160px, calc(100% - 44px)); margin: 0 auto; padding-bottom: 60px; }
+    /* 精简页头：保留标题、自动更新的日期及实时状态 */
+    .compact-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 33px 5px 26px; }
+    .heading-group { min-width: 0; }
+    .compact-header h1 { margin: 0 0 10px; font-size: clamp(26px, 3.4vw, 37px); font-weight: 700; line-height: 1.2; letter-spacing: -.055em; }
+    .header-date { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: #79867c; font-variant-numeric: tabular-nums; }
+    .header-date .live-dot { width: 7px; height: 7px; background: #67a27b; border-radius: 50%; box-shadow: 0 0 0 4px #e4f0e5; flex: 0 0 auto; }
+    .time-status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+    .time-status .clock { font-weight: 650; font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
+    .time-status .status { color: #89948a; font-size: 12px; text-align: right; max-width: 420px; line-height: 1.45; }
+    .workspace { background: #fff; border: 1px solid #ebeee7; box-shadow: 0 16px 55px rgba(41,58,46,.045); border-radius: 22px; padding: 23px 27px 27px; }
+    .toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 14px; border-bottom: 1px solid #f0f0ed; padding-bottom: 22px; }
+    .segmented { display: inline-flex; padding: 5px; gap: 4px; background: #f3f5f0; border: 1px solid #edefe9; border-radius: 13px; }
+    .segmented button { border: 0; background: transparent; color: #768078; border-radius: 9px; padding: 10px 14px; min-height: 36px; font-size: 13px; font-weight: 620; white-space: nowrap; }
+    .segmented button[aria-pressed="true"] { background: #fff; color: #28382f; box-shadow: 0 2px 8px #31453613; }
+    .action-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .now-legend { display: inline-flex; align-items: center; gap: 7px; color: #727b73; font-size: 12px; }
+    .now-legend::before { content: ""; width: 22px; height: 2px; background: var(--red); }
+    .subtle-button { background: transparent; border: 1px solid #e6eae2; border-radius: 10px; padding: 9px 12px; min-height: 36px; color: #606c62; font-size: 12px; font-weight: 640; }
+    .subtle-button:hover { background: #f5f8f3; }
+    .subtle-button[disabled] { opacity: .45; cursor: not-allowed; }
+    .mode-banner { display: none; align-items: center; gap: 10px; color: #795d31; background: #fff4db; border: 1px solid #ffe8b5; padding: 10px 13px; border-radius: 10px; font-size: 12px; margin: 15px 0 0; }
+    .mode-banner[data-open="true"] { display: flex; }
+    .mode-banner button { margin-left: auto; color: #7b5f33; border: 0; background: transparent; text-decoration: underline; font-weight: 700; }
+    .timeline-head { display: flex; padding-top: 27px; padding-bottom: 15px; }
+    .rail-spacer { width: 72px; flex-shrink: 0; }
+    .lane-labels { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .lane-label { display: flex; align-items: center; justify-content: center; gap: 8px; background: #f6f7f4; color: #667166; min-height: 45px; border-radius: 11px; font-size: 13px; font-weight: 690; }
+    .lane-label .lane-indicator { width: 8px; height: 8px; border-radius: 50%; background: #93ad9b; }
+    .lane-label[data-lane="wash"] .lane-indicator { background: #b3a2d4; }
+    .timeline-outer { position: relative; display: flex; }
+    .time-rail { position: relative; width: 72px; flex: 0 0 72px; height: var(--plot-height); }
+    .time-tick { position: absolute; top: 0; left: 0; width: 58px; transform: translateY(-50%); text-align: right; color: #8d958f; font-size: 11px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+    .time-tick.major { font-weight: 740; color: #5f6c63; }
+    .time-tick:first-child { transform: translateY(2px); }
+    .timeline-plot { --plot-gap: 5px; position: relative; flex: 1; min-width: 0; height: var(--plot-height); border-left: 1px solid #e0e7dd; border-right: 1px solid #f0f2ed; background: linear-gradient(90deg, #f9fbf8, #fbfcfa); border-radius: 6px; }
+    .time-grid { position: absolute; z-index: 0; left: 0; right: 0; border-top: 1px solid #e9ece6; pointer-events: none; }
+    .time-grid.major { border-top-color: #dce3d9; }
+    .lane-divider { position: absolute; left: 50%; top: calc(135 * var(--minute-height)); height: calc(145 * var(--minute-height)); border-left: 1px dashed #d6ddd4; z-index: 1; pointer-events: none; }
+    .event { position: absolute; z-index: 2; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 7px 13px 7px 16px; border: 1px solid rgba(22,50,35,.045); border-radius: 8px; background: var(--block-bg); color: var(--block-ink, #28362f); transition: background-color .18s ease, box-shadow .18s ease; }
+    .event[data-track="both"] { left: 6px; right: 6px; }
+    .event[data-track="dry"] { left: 6px; width: calc(50% - 9px); }
+    .event[data-track="wash"] { right: 6px; width: calc(50% - 9px); }
+    .event:hover { box-shadow: inset 0 0 0 1px rgba(33,52,42,.16); z-index: 4; }
+    .event[data-size="long"] { justify-content: flex-start; padding-top: 16px; }
+    .event.is-active { box-shadow: inset 0 0 0 1.5px rgba(40,64,48,.4), 0 3px 10px #1b3a2714; }
+    .event-main { display: flex; align-items: center; width: 100%; gap: 7px; min-width: 0; }
+    .event-symbol { flex: 0 0 auto; font-size: 15px; line-height: 1; margin-right: 2px; }
+    .event-name { font-size: 13px; font-weight: 720; line-height: 1.4; min-width: 0; letter-spacing: -.01em; }
+    .event-times { font-size: 11px; color: inherit; opacity: .64; font-weight: 570; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .event:not([data-size="short"]) .event-times { margin-top: 1px; margin-left: 26px; }
+    .event .color-picker { position: absolute; top: 9px; right: 9px; width: 22px; height: 22px; border: 2px solid #ffffffb8; outline: 1px solid #273a2d25; border-radius: 50%; padding: 0; background: transparent; cursor: pointer; opacity: .52; transition: opacity .2s ease, transform .2s ease; }
+    .event:hover .color-picker, .event .color-picker:focus { opacity: 1; transform: scale(1.06); }
+    .event .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .event .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+    .event .color-picker::-moz-color-swatch { border: none; border-radius: 50%; }
+    .event[data-size="short"] { padding: 3px 36px 3px 11px; border-radius: 6px; }
+    .event[data-size="short"] .event-main { gap: 0; }
+    .event[data-size="short"] .event-symbol { display: none; }
+    .event[data-size="short"] .event-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event[data-size="short"] .event-times { position: absolute; right: 36px; top: 50%; transform: translateY(-50%); margin: 0; font-size: 10px; }
+    .event[data-size="short"] .color-picker { width: 17px; height: 17px; top: 50%; right: 9px; transform: translateY(-50%); opacity: .7; }
+    .event[data-size="short"]:hover .color-picker { transform: translateY(-50%) scale(1.08); }
+    .event[data-size="short"] .event-name { max-width: calc(100% - 100px); }
+    .current-line { display: none; position: absolute; left: -9px; right: -4px; height: 2px; background: var(--red); z-index: 12; pointer-events: none; box-shadow: 0 0 8px #e44b4b35; }
+    .current-line[data-visible="true"] { display: block; }
+    .current-line::before { content: ""; position: absolute; left: -5px; top: -5px; width: 12px; height: 12px; background: var(--red); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--red); border-radius: 50%; }
+    .line-time { position: absolute; right: 0; top: -28px; background: var(--red); color: white; font-size: 11px; line-height: 1; font-weight: 800; padding: 7px 9px; border-radius: 7px; font-variant-numeric: tabular-nums; letter-spacing: .03em; white-space: nowrap; }
+    .line-time::after { content: ""; position: absolute; right: 7px; bottom: -4px; background: var(--red); width: 8px; height: 8px; transform: rotate(45deg); }
+    .end-note { position: relative; margin: 4px 0 0 72px; display: flex; align-items: center; gap: 10px; min-height: 52px; color: #3b5142; font-size: 13px; font-weight: 740; }
+    .end-note::before { content: ""; position: absolute; top: -6px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #587960; }
+    .end-note .end-time { color: #7e9081; font-variant-numeric: tabular-nums; font-size: 12px; }
+    .view-dry .lane-labels, .view-wash .lane-labels { grid-template-columns: 1fr; }
+    .view-dry .lane-label[data-lane="wash"], .view-wash .lane-label[data-lane="dry"] { display: none; }
+    .view-dry .event[data-track="wash"], .view-wash .event[data-track="dry"] { display: none; }
+    .view-dry .event[data-track="dry"], .view-wash .event[data-track="wash"] { left: 6px; right: 6px; width: auto; }
+    .view-dry .lane-divider, .view-wash .lane-divider { display: none; }
+    @media (max-width: 920px) {
+      .page { width: min(100% - 32px, 1160px); }
+      .workspace { padding: 18px 16px; }
+      .event-name { font-size: 12px; }
+      .event-symbol { font-size: 13px; }
+      .event[data-track="dry"], .event[data-track="wash"] { padding-left: 11px; }
+      .event:not([data-size="short"]) .event-times { margin-left: 22px; }
+    }
+    @media (max-width: 690px) {
+      :root { --minute-height: 3px; }
+      .page { width: min(100% - 24px, 1160px); padding-bottom: 30px; }
+      .compact-header { padding: 23px 3px 20px; gap: 14px; align-items: flex-start; }
+      .compact-header h1 { font-size: 27px; margin-bottom: 10px; }
+      .header-date { font-size: 11px; gap: 7px; }
+      .time-status .clock { font-size: 18px; }
+      .time-status .status { font-size: 10px; max-width: 128px; }
+      .workspace { border-radius: 18px; padding: 14px 10px 17px; }
+      .toolbar { padding: 2px 2px 16px; }
+      .segmented { width: 100%; }
+      .segmented button { padding: 9px 4px; flex: 1; font-size: 12px; }
+      .action-group { width: 100%; justify-content: space-between; gap: 6px; }
+      .subtle-button { font-size: 11px; padding: 8px 10px; }
+      .rail-spacer, .time-rail { width: 53px; flex-basis: 53px; }
+      .time-tick { width: 45px; font-size: 10px; }
+      .lane-label { min-height: 40px; font-size: 12px; }
+      .timeline-head { padding-top: 20px; padding-bottom: 13px; }
+      .event { padding-left: 10px; padding-right: 29px; }
+      .event-name { font-size: 12px; }
+      .event-times { font-size: 10px; }
+      .event:not([data-size="short"]) .event-times { margin-left: 21px; }
+      .event .color-picker { width: 20px; height: 20px; top: 10px; right: 7px; }
+      .event[data-size="short"] { padding: 3px 27px 3px 8px; }
+      .event[data-size="short"] .event-name { max-width: calc(100% - 86px); font-size: 11px; }
+      .event[data-size="short"] .event-times { right: 29px; font-size: 9px; }
+      .end-note { margin-left: 53px; font-size: 12px; }
+      .view-compare .timeline-plot { min-width: 0; }
+      .view-compare .event[data-track="dry"], .view-compare .event[data-track="wash"] { padding: 6px 18px 6px 7px; }
+      .view-compare .event[data-track="dry"] .event-symbol, .view-compare .event[data-track="wash"] .event-symbol { display: none; }
+      .view-compare .event[data-track="dry"] .event-times, .view-compare .event[data-track="wash"] .event-times { margin-left: 0; font-size: 9px; }
+      .view-compare .event[data-track="dry"] .color-picker, .view-compare .event[data-track="wash"] .color-picker { right: 3px; width: 15px; height: 15px; }
+      .view-compare .event[data-track="dry"] .event-name, .view-compare .event[data-track="wash"] .event-name { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="compact-header" id="top">
+      <div class="heading-group">
+        <h1 id="schedule-title">晚间时间表</h1>
+        <div class="header-date"><span class="live-dot" aria-hidden="true"></span><time id="todayDate">正在读取日期…</time></div>
+      </div>
+      <div class="time-status" aria-live="off">
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="status" id="currentActivity">读取当前时间…</div>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="schedule-title">
+        <div class="workspace" id="workspace">
+          <div class="toolbar">
+            <div class="segmented" role="group" aria-label="选择晚间作息版本">
+              <button type="button" data-view-button="compare" aria-pressed="true">两种安排对比</button>
+              <button type="button" data-view-button="dry" aria-pressed="false">不洗头的晚上</button>
+              <button type="button" data-view-button="wash" aria-pressed="false">洗头的晚上</button>
+            </div>
+            <div class="action-group">
+              <span class="now-legend" id="lineLegend">红线 = 当前时间</span>
+              <button type="button" class="subtle-button" id="previewButton">预览 18:59</button>
+              <button type="button" class="subtle-button" id="resetColorsButton">重置配色</button>
+            </div>
+          </div>
+
+          <div class="mode-banner" id="previewBanner" data-open="false" role="status">
+            <span>正在预览 18:59 的时间线位置；真实时间仍在右上角显示。</span>
+            <button type="button" id="returnLiveButton">返回实时</button>
+          </div>
+
+          <div class="timeline-layout view-compare" id="timelineLayout">
+            <div class="timeline-head" aria-hidden="true">
+              <div class="rail-spacer"></div>
+              <div class="lane-labels">
+                <div class="lane-label" data-lane="dry"><span class="lane-indicator"></span>不洗头的晚上</div>
+                <div class="lane-label" data-lane="wash"><span class="lane-indicator"></span>洗头的晚上</div>
+              </div>
+            </div>
+            <div class="timeline-outer">
+              <div class="time-rail" id="timeRail" aria-hidden="true"></div>
+              <div class="timeline-plot" id="timelinePlot" aria-label="按真实分钟比例绘制的晚间时间轴">
+                <div class="lane-divider" aria-hidden="true"></div>
+                <div class="current-line" id="currentLine" data-visible="false" aria-hidden="true"><span class="line-time" id="lineTime">--:--</span></div>
+              </div>
+            </div>
+            <div class="end-note"><span class="end-time">23:30</span><span>☾ &nbsp;关灯，准备入睡</span></div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+    // 作息安排完整取自上传的《作息表_纵向时间轴_A4.pdf》；common=两种晚上共用。
+    const EVENTS = [
+      { id: "commute", track: "both", start: "18:00", end: "18:20", title: "下班、回家", icon: "🚶", color: "#dcebdd" },
+      { id: "settle", track: "both", start: "18:20", end: "18:30", title: "到家、换衣服，歇一会儿", icon: "🧥", color: "#e5e9f3" },
+      { id: "cook", track: "both", start: "18:30", end: "19:10", title: "做晚饭", icon: "🍳", color: "#ffe0b7" },
+      { id: "dinner", track: "both", start: "19:10", end: "19:35", title: "吃饭", icon: "🍚", color: "#ffeacc" },
+      { id: "dishes", track: "both", start: "19:35", end: "19:45", title: "洗碗、简单收拾厨房", icon: "🧽", color: "#e0edf0" },
+      { id: "walk", track: "both", start: "19:45", end: "20:15", title: "出门轻松散步", icon: "🌿", color: "#d5ecdf" },
+      { id: "dry-shower", track: "dry", start: "20:15", end: "20:40", title: "洗澡、护肤", icon: "🚿", color: "#e6e4f6" },
+      { id: "wash-shower", track: "wash", start: "20:15", end: "20:40", title: "洗澡、洗头", icon: "🚿", color: "#dfe8f7" },
+      { id: "dry-free", track: "dry", start: "20:40", end: "22:40", title: "自由时间：看书或看影视", icon: "📖", color: "#e9e4f6" },
+      { id: "wash-hair", track: "wash", start: "20:40", end: "21:15", title: "吸水、吹头发、护肤", icon: "🪮", color: "#f8e1e6" },
+      { id: "wash-free", track: "wash", start: "21:15", end: "22:40", title: "看书、看一集剧", icon: "🎬", color: "#ece7f7" },
+      { id: "footbath", track: "both", start: "22:40", end: "22:55", title: "泡脚 + 听音乐（含准备和收拾）", icon: "🎵", color: "#fbe9d6" },
+      { id: "recovery", track: "both", start: "22:55", end: "23:10", title: "在床上坐着做已有的康复动作", icon: "🧘", color: "#deecdf" },
+      { id: "winddown", track: "both", start: "23:10", end: "23:30", title: "刷牙、上厕所、调暗灯光，安静下来", icon: "🌙", color: "#e4e8ed" }
+    ];
+
+    const START = 18 * 60, END = 23 * 60 + 30;
+    const $ = id => document.getElementById(id);
+    const plot = $("timelinePlot");
+    const layout = $("timelineLayout");
+    const clock = $("clock");
+    const line = $("currentLine");
+    const lineTime = $("lineTime");
+    const activity = $("currentActivity");
+    const previewBanner = $("previewBanner");
+    let currentView = window.innerWidth <= 690 ? "dry" : "compare";
+    let previewTime = null;
+    let lastActiveSignature = "";
+    let lastDateKey = "";
+
+    function toMinutes(hhmm) {
+      const [hours, minutes] = hhmm.split(":").map(Number);
+      return hours * 60 + minutes;
+    }
+    function readColor(id) {
+      try { return localStorage.getItem("evening-color-" + id); } catch (_) { return null; }
+    }
+    function storeColor(id, color) {
+      try { localStorage.setItem("evening-color-" + id, color); } catch (_) {}
+    }
+    function contrastColor(hex) {
+      const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      const light = rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
+      return light < .38 ? "#ffffff" : "#25332b";
+    }
+    function styleEvent(el, color) {
+      el.style.setProperty("--block-bg", color);
+      el.style.setProperty("--block-ink", contrastColor(color));
+    }
+    function addTimelineLabels() {
+      for (let m = START; m <= END; m += 30) {
+        const diff = m - START;
+        const isHour = m % 60 === 0;
+        const label = document.createElement("span");
+        label.className = "time-tick" + (isHour ? " major" : "");
+        label.style.top = `calc(${diff} * var(--minute-height))`;
+        label.textContent = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+        $("timeRail").appendChild(label);
+        const gridline = document.createElement("div");
+        gridline.className = "time-grid" + (isHour ? " major" : "");
+        gridline.style.top = `calc(${diff} * var(--minute-height))`;
+        plot.appendChild(gridline);
+      }
+    }
+    const eventElements = new Map();
+    function addEvents() {
+      for (const item of EVENTS) {
+        const duration = toMinutes(item.end) - toMinutes(item.start);
+        const el = document.createElement("article");
+        el.className = "event";
+        el.dataset.track = item.track;
+        el.dataset.size = duration <= 15 ? "short" : duration >= 70 ? "long" : "regular";
+        el.setAttribute("aria-label", `${item.title}，${item.start} 到 ${item.end}`);
+        el.style.top = `calc(${toMinutes(item.start) - START} * var(--minute-height) + 2px)`;
+        el.style.height = `calc(${duration} * var(--minute-height) - 4px)`;
+        const main = document.createElement("div");
+        main.className = "event-main";
+        const icon = document.createElement("span");
+        icon.className = "event-symbol";
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = item.icon;
+        const name = document.createElement("span");
+        name.className = "event-name";
+        name.textContent = item.title;
+        main.append(icon, name);
+        const times = document.createElement("div");
+        times.className = "event-times";
+        times.textContent = `${item.start} — ${item.end}`;
+        const color = document.createElement("input");
+        color.type = "color";
+        color.className = "color-picker";
+        color.setAttribute("aria-label", `修改「${item.title}」的背景颜色`);
+        color.title = `修改「${item.title}」背景色`;
+        color.value = readColor(item.id) || item.color;
+        color.addEventListener("input", () => { styleEvent(el, color.value); storeColor(item.id, color.value); });
+        styleEvent(el, color.value);
+        el.append(main, times, color);
+        plot.appendChild(el);
+        eventElements.set(item.id, el);
+      }
+    }
+    function setView(mode) {
+      currentView = mode;
+      layout.className = "timeline-layout view-" + mode;
+      document.querySelectorAll("[data-view-button]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.viewButton === mode));
+      });
+      updateClock();
+    }
+    function twoDigits(n) { return String(n).padStart(2, "0"); }
+    function hhmm(mins) {
+      return `${twoDigits(Math.floor(mins / 60))}:${twoDigits(Math.floor(mins % 60))}`;
+    }
+    function getCurrentItems(minutes) {
+      return EVENTS.filter(e => {
+        if (currentView !== "compare" && e.track !== "both" && e.track !== currentView) return false;
+        return minutes >= toMinutes(e.start) && minutes < toMinutes(e.end);
+      });
+    }
+    function updateClock() {
+      const now = new Date();
+      const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      if (dateKey !== lastDateKey) {
+        $("todayDate").textContent = new Intl.DateTimeFormat("zh-CN", {
+          year: "numeric", month: "long", day: "numeric", weekday: "long"
+        }).format(now);
+        lastDateKey = dateKey;
+      }
+      const realMinute = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+      clock.textContent = `${twoDigits(now.getHours())}:${twoDigits(now.getMinutes())}:${twoDigits(now.getSeconds())}`;
+      const minute = previewTime == null ? realMinute : previewTime;
+      const activeEvents = minute >= START && minute < END ? getCurrentItems(minute) : [];
+      const currentSignature = activeEvents.map(e => e.id).join("-");
+      if (lastActiveSignature !== currentSignature) {
+        for (const [id, el] of eventElements) el.classList.toggle("is-active", activeEvents.some(e => e.id === id));
+        lastActiveSignature = currentSignature;
+      }
+      if (minute >= START && minute <= END) {
+        const pixelPerMinute = parseFloat(getComputedStyle(plot).getPropertyValue("--minute-height")) || 3.2;
+        line.style.top = `${(minute - START) * pixelPerMinute}px`;
+        line.dataset.visible = "true";
+        lineTime.textContent = hhmm(minute);
+      } else {
+        line.dataset.visible = "false";
+      }
+      if (minute < START) activity.textContent = "晚间计划将在 18:00 开始";
+      else if (minute >= END) activity.textContent = "今晚的安排已结束 · 好好休息";
+      else if (activeEvents.length === 1) activity.textContent = `现在 · ${activeEvents[0].title}`;
+      else if (activeEvents.length === 2) activity.textContent = `不洗头：${activeEvents[0].title} ｜ 洗头：${activeEvents[1].title}`;
+      else activity.textContent = "按自己的节奏，慢慢来";
+      if (previewTime != null) activity.textContent = `预览 18:59 · ${activity.textContent.replace(/^现在 · /, "")}`;
+    }
+    function togglePreview() {
+      previewTime = previewTime == null ? 18 * 60 + 59 : null;
+      $("previewButton").textContent = previewTime == null ? "预览 18:59" : "返回实时";
+      previewBanner.dataset.open = String(previewTime != null);
+      $("lineLegend").textContent = previewTime == null ? "红线 = 当前时间" : "红线 = 预览时间";
+      lastActiveSignature = "";
+      updateClock();
+      if (previewTime != null) line.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function resetColors() {
+      for (const item of EVENTS) {
+        try { localStorage.removeItem("evening-color-" + item.id); } catch (_) {}
+        const el = eventElements.get(item.id);
+        if (!el) continue;
+        styleEvent(el, item.color);
+        el.querySelector(".color-picker").value = item.color;
+      }
+    }
+    function init() {
+      addTimelineLabels();
+      addEvents();
+      document.querySelectorAll("[data-view-button]").forEach(button => button.addEventListener("click", () => setView(button.dataset.viewButton)));
+      $("previewButton").addEventListener("click", togglePreview);
+      $("returnLiveButton").addEventListener("click", () => { if (previewTime != null) togglePreview(); });
+      $("resetColorsButton").addEventListener("click", resetColors);
+      setView(currentView);
+      setInterval(updateClock, 1000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) updateClock(); });
+      window.addEventListener("resize", updateClock);
+    }
+    init();
+  </script>
+</body>
+</html>
