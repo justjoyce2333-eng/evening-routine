@@ -1,398 +1,449 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f7f7f4" />
-  <meta name="description" content="18:00—23:30，下班后的作息时间表。可切换洗头或不洗头安排，自定义时间块颜色，实时查看当前时间。" />
-  <title>晚间时间表</title>
-  <style>
-    :root {
-      --page: #f7f7f4;
-      --ink: #232a2e;
-      --muted: #87908c;
-      --line: #e9ece6;
-      --green: #426b57;
-      --red: #e44b4b;
-      --minute-height: 3.2px;
-      --plot-height: calc(330 * var(--minute-height));
-      --radius: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      font-synthesis: none;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--ink); background: var(--page); -webkit-font-smoothing: antialiased; }
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-    button:focus-visible, input:focus-visible { outline: 3px solid #87aa95; outline-offset: 3px; }
-    .page { width: min(1160px, calc(100% - 44px)); margin: 0 auto; padding-bottom: 60px; }
-    /* 精简页头：保留标题、自动更新的日期及实时状态 */
-    .compact-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 33px 5px 26px; }
-    .heading-group { min-width: 0; }
-    .compact-header h1 { margin: 0 0 10px; font-size: clamp(26px, 3.4vw, 37px); font-weight: 700; line-height: 1.2; letter-spacing: -.055em; }
-    .header-date { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: #79867c; font-variant-numeric: tabular-nums; }
-    .header-date .live-dot { width: 7px; height: 7px; background: #67a27b; border-radius: 50%; box-shadow: 0 0 0 4px #e4f0e5; flex: 0 0 auto; }
-    .time-status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-    .time-status .clock { font-weight: 650; font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
-    .time-status .status { color: #89948a; font-size: 12px; text-align: right; max-width: 420px; line-height: 1.45; }
-    .workspace { background: #fff; border: 1px solid #ebeee7; box-shadow: 0 16px 55px rgba(41,58,46,.045); border-radius: 22px; padding: 23px 27px 27px; }
-    .toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 14px; border-bottom: 1px solid #f0f0ed; padding-bottom: 22px; }
-    .segmented { display: inline-flex; padding: 5px; gap: 4px; background: #f3f5f0; border: 1px solid #edefe9; border-radius: 13px; }
-    .segmented button { border: 0; background: transparent; color: #768078; border-radius: 9px; padding: 10px 14px; min-height: 36px; font-size: 13px; font-weight: 620; white-space: nowrap; }
-    .segmented button[aria-pressed="true"] { background: #fff; color: #28382f; box-shadow: 0 2px 8px #31453613; }
-    .action-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .now-legend { display: inline-flex; align-items: center; gap: 7px; color: #727b73; font-size: 12px; }
-    .now-legend::before { content: ""; width: 22px; height: 2px; background: var(--red); }
-    .subtle-button { background: transparent; border: 1px solid #e6eae2; border-radius: 10px; padding: 9px 12px; min-height: 36px; color: #606c62; font-size: 12px; font-weight: 640; }
-    .subtle-button:hover { background: #f5f8f3; }
-    .subtle-button[disabled] { opacity: .45; cursor: not-allowed; }
-    .mode-banner { display: none; align-items: center; gap: 10px; color: #795d31; background: #fff4db; border: 1px solid #ffe8b5; padding: 10px 13px; border-radius: 10px; font-size: 12px; margin: 15px 0 0; }
-    .mode-banner[data-open="true"] { display: flex; }
-    .mode-banner button { margin-left: auto; color: #7b5f33; border: 0; background: transparent; text-decoration: underline; font-weight: 700; }
-    .timeline-head { display: flex; padding-top: 27px; padding-bottom: 15px; }
-    .rail-spacer { width: 72px; flex-shrink: 0; }
-    .lane-labels { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .lane-label { display: flex; align-items: center; justify-content: center; gap: 8px; background: #f6f7f4; color: #667166; min-height: 45px; border-radius: 11px; font-size: 13px; font-weight: 690; }
-    .lane-label .lane-indicator { width: 8px; height: 8px; border-radius: 50%; background: #93ad9b; }
-    .lane-label[data-lane="wash"] .lane-indicator { background: #b3a2d4; }
-    .timeline-outer { position: relative; display: flex; }
-    .time-rail { position: relative; width: 72px; flex: 0 0 72px; height: var(--plot-height); }
-    .time-tick { position: absolute; top: 0; left: 0; width: 58px; transform: translateY(-50%); text-align: right; color: #8d958f; font-size: 11px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-    .time-tick.major { font-weight: 740; color: #5f6c63; }
-    .time-tick:first-child { transform: translateY(2px); }
-    .timeline-plot { --plot-gap: 5px; position: relative; flex: 1; min-width: 0; height: var(--plot-height); border-left: 1px solid #e0e7dd; border-right: 1px solid #f0f2ed; background: linear-gradient(90deg, #f9fbf8, #fbfcfa); border-radius: 6px; }
-    .time-grid { position: absolute; z-index: 0; left: 0; right: 0; border-top: 1px solid #e9ece6; pointer-events: none; }
-    .time-grid.major { border-top-color: #dce3d9; }
-    .lane-divider { position: absolute; left: 50%; top: calc(135 * var(--minute-height)); height: calc(145 * var(--minute-height)); border-left: 1px dashed #d6ddd4; z-index: 1; pointer-events: none; }
-    .event { position: absolute; z-index: 2; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 7px 13px 7px 16px; border: 1px solid rgba(22,50,35,.045); border-radius: 8px; background: var(--block-bg); color: var(--block-ink, #28362f); transition: background-color .18s ease, box-shadow .18s ease; }
-    .event[data-track="both"] { left: 6px; right: 6px; }
-    .event[data-track="dry"] { left: 6px; width: calc(50% - 9px); }
-    .event[data-track="wash"] { right: 6px; width: calc(50% - 9px); }
-    .event:hover { box-shadow: inset 0 0 0 1px rgba(33,52,42,.16); z-index: 4; }
-    .event[data-size="long"] { justify-content: flex-start; padding-top: 16px; }
-    .event.is-active { box-shadow: inset 0 0 0 1.5px rgba(40,64,48,.4), 0 3px 10px #1b3a2714; }
-    .event-main { display: flex; align-items: center; width: 100%; gap: 7px; min-width: 0; }
-    .event-symbol { flex: 0 0 auto; font-size: 15px; line-height: 1; margin-right: 2px; }
-    .event-name { font-size: 13px; font-weight: 720; line-height: 1.4; min-width: 0; letter-spacing: -.01em; }
-    .event-times { font-size: 11px; color: inherit; opacity: .64; font-weight: 570; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .event:not([data-size="short"]) .event-times { margin-top: 1px; margin-left: 26px; }
-    .event .color-picker { position: absolute; top: 9px; right: 9px; width: 22px; height: 22px; border: 2px solid #ffffffb8; outline: 1px solid #273a2d25; border-radius: 50%; padding: 0; background: transparent; cursor: pointer; opacity: .52; transition: opacity .2s ease, transform .2s ease; }
-    .event:hover .color-picker, .event .color-picker:focus { opacity: 1; transform: scale(1.06); }
-    .event .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-    .event .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
-    .event .color-picker::-moz-color-swatch { border: none; border-radius: 50%; }
-    .event[data-size="short"] { padding: 3px 36px 3px 11px; border-radius: 6px; }
-    .event[data-size="short"] .event-main { gap: 0; }
-    .event[data-size="short"] .event-symbol { display: none; }
-    .event[data-size="short"] .event-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .event[data-size="short"] .event-times { position: absolute; right: 36px; top: 50%; transform: translateY(-50%); margin: 0; font-size: 10px; }
-    .event[data-size="short"] .color-picker { width: 17px; height: 17px; top: 50%; right: 9px; transform: translateY(-50%); opacity: .7; }
-    .event[data-size="short"]:hover .color-picker { transform: translateY(-50%) scale(1.08); }
-    .event[data-size="short"] .event-name { max-width: calc(100% - 100px); }
-    .current-line { display: none; position: absolute; left: -9px; right: -4px; height: 2px; background: var(--red); z-index: 12; pointer-events: none; box-shadow: 0 0 8px #e44b4b35; }
-    .current-line[data-visible="true"] { display: block; }
-    .current-line::before { content: ""; position: absolute; left: -5px; top: -5px; width: 12px; height: 12px; background: var(--red); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--red); border-radius: 50%; }
-    .line-time { position: absolute; right: 0; top: -28px; background: var(--red); color: white; font-size: 11px; line-height: 1; font-weight: 800; padding: 7px 9px; border-radius: 7px; font-variant-numeric: tabular-nums; letter-spacing: .03em; white-space: nowrap; }
-    .line-time::after { content: ""; position: absolute; right: 7px; bottom: -4px; background: var(--red); width: 8px; height: 8px; transform: rotate(45deg); }
-    .end-note { position: relative; margin: 4px 0 0 72px; display: flex; align-items: center; gap: 10px; min-height: 52px; color: #3b5142; font-size: 13px; font-weight: 740; }
-    .end-note::before { content: ""; position: absolute; top: -6px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #587960; }
-    .end-note .end-time { color: #7e9081; font-variant-numeric: tabular-nums; font-size: 12px; }
-    .view-dry .lane-labels, .view-wash .lane-labels { grid-template-columns: 1fr; }
-    .view-dry .lane-label[data-lane="wash"], .view-wash .lane-label[data-lane="dry"] { display: none; }
-    .view-dry .event[data-track="wash"], .view-wash .event[data-track="dry"] { display: none; }
-    .view-dry .event[data-track="dry"], .view-wash .event[data-track="wash"] { left: 6px; right: 6px; width: auto; }
-    .view-dry .lane-divider, .view-wash .lane-divider { display: none; }
-    @media (max-width: 920px) {
-      .page { width: min(100% - 32px, 1160px); }
-      .workspace { padding: 18px 16px; }
-      .event-name { font-size: 12px; }
-      .event-symbol { font-size: 13px; }
-      .event[data-track="dry"], .event[data-track="wash"] { padding-left: 11px; }
-      .event:not([data-size="short"]) .event-times { margin-left: 22px; }
-    }
-    @media (max-width: 690px) {
-      :root { --minute-height: 3px; }
-      .page { width: min(100% - 24px, 1160px); padding-bottom: 30px; }
-      .compact-header { padding: 23px 3px 20px; gap: 14px; align-items: flex-start; }
-      .compact-header h1 { font-size: 27px; margin-bottom: 10px; }
-      .header-date { font-size: 11px; gap: 7px; }
-      .time-status .clock { font-size: 18px; }
-      .time-status .status { font-size: 10px; max-width: 128px; }
-      .workspace { border-radius: 18px; padding: 14px 10px 17px; }
-      .toolbar { padding: 2px 2px 16px; }
-      .segmented { width: 100%; }
-      .segmented button { padding: 9px 4px; flex: 1; font-size: 12px; }
-      .action-group { width: 100%; justify-content: space-between; gap: 6px; }
-      .subtle-button { font-size: 11px; padding: 8px 10px; }
-      .rail-spacer, .time-rail { width: 53px; flex-basis: 53px; }
-      .time-tick { width: 45px; font-size: 10px; }
-      .lane-label { min-height: 40px; font-size: 12px; }
-      .timeline-head { padding-top: 20px; padding-bottom: 13px; }
-      .event { padding-left: 10px; padding-right: 29px; }
-      .event-name { font-size: 12px; }
-      .event-times { font-size: 10px; }
-      .event:not([data-size="short"]) .event-times { margin-left: 21px; }
-      .event .color-picker { width: 20px; height: 20px; top: 10px; right: 7px; }
-      .event[data-size="short"] { padding: 3px 27px 3px 8px; }
-      .event[data-size="short"] .event-name { max-width: calc(100% - 86px); font-size: 11px; }
-      .event[data-size="short"] .event-times { right: 29px; font-size: 9px; }
-      .end-note { margin-left: 53px; font-size: 12px; }
-      .view-compare .timeline-plot { min-width: 0; }
-      .view-compare .event[data-track="dry"], .view-compare .event[data-track="wash"] { padding: 6px 18px 6px 7px; }
-      .view-compare .event[data-track="dry"] .event-symbol, .view-compare .event[data-track="wash"] .event-symbol { display: none; }
-      .view-compare .event[data-track="dry"] .event-times, .view-compare .event[data-track="wash"] .event-times { margin-left: 0; font-size: 9px; }
-      .view-compare .event[data-track="dry"] .color-picker, .view-compare .event[data-track="wash"] .color-picker { right: 3px; width: 15px; height: 15px; }
-      .view-compare .event[data-track="dry"] .event-name, .view-compare .event[data-track="wash"] .event-name { font-size: 11px; }
-    }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7f8f5">
+<meta name="description" content="早间、白天、晚上三段式每日时间表；实时红线、自由配色、晚间双版本与白天提醒。">
+<title>每日时间表 · 我的每一天</title>
+<style>
+:root{--ink:#23312a;--muted:#77857b;--paper:#fff;--bg:#f7f8f5;--red:#e34f52;--green:#426b57;font-family:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC","Microsoft YaHei",sans-serif;font-synthesis:none}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #83b598;outline-offset:3px}
+.page{width:min(1050px,calc(100% - 36px));margin:auto;padding:28px 0 76px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:6px 2px 27px}
+.brand{display:flex;gap:15px;align-items:center}
+.brandmark{display:grid;place-items:center;background:#e6eee6;border-radius:15px;color:#427459;width:48px;height:48px;font-size:24px}
+.kicker{font-size:10px;letter-spacing:.19em;font-weight:800;color:#85948a;margin:0 0 5px}
+h1{font-size:clamp(25px,3.4vw,36px);letter-spacing:-.065em;margin:0 0 7px;font-weight:760}
+.date{font-size:12px;color:#78877c;font-variant-numeric:tabular-nums}
+.clock-box{text-align:right;min-width:158px}
+.clock{font-size:24px;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.045em}
+.now-activity{font-size:11px;color:#879288;line-height:1.5;margin-top:4px}
+.nav{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.nav a{text-decoration:none;display:flex;align-items:center;gap:8px;background:#fff;color:#607368;border:1px solid #e7ebe5;border-radius:11px;padding:11px 14px;font-size:13px;font-weight:730;transition:background .15s,border-color .15s}
+.nav a small{font-size:10px;color:#9aa59b;font-weight:600;white-space:nowrap}
+.nav a.is-current{background:#e2eee5;border-color:#cce3d1;color:#2b6546}
+.nav .spacer{flex:1}
+.btn{background:#fff;color:#58665c;border:1px solid #e6ebe4;border-radius:10px;padding:10px 13px;font-size:12px;font-weight:700}
+.btn:hover,.nav a:hover{background:#f0f5ef}
+.section{background:#fff;border:1px solid #e8ece6;box-shadow:0 16px 45px #21362708;border-radius:22px;padding:24px 25px 26px;margin-bottom:23px;scroll-margin-top:16px}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.section-id{font-size:10px;letter-spacing:.15em;font-weight:800;color:#88978a;margin-bottom:7px}
+.section-name{display:flex;align-items:center;gap:10px}
+.section-name h2{font-size:23px;letter-spacing:-.055em;margin:0;font-weight:730}
+.section-emoji{display:grid;place-items:center;width:31px;height:31px;background:#f0f5ed;border-radius:10px;font-size:17px}
+.section-range{background:#f6f7f3;color:#7a877e;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:670;white-space:nowrap;font-variant-numeric:tabular-nums}
+.section-subtitle{font-size:12px;color:#89978b;margin:8px 0 0;line-height:1.6}
+.section-note{margin:12px 0 0 56px;color:#8b968c;font-size:11px;line-height:1.6}
+.rail-layout{display:flex;gap:0;position:relative}
+.rail{width:66px;flex:0 0 66px;position:relative;height:calc(var(--minutes) * var(--minute-size))}
+.tick{position:absolute;right:10px;transform:translateY(-50%);color:#919e95;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tick:first-child{transform:translateY(0)}
+.tick.major{color:#65766a;font-weight:800}
+.plot{position:relative;min-width:0;flex:1;height:calc(var(--minutes) * var(--minute-size));background:linear-gradient(90deg,#f9fbf9,#fcfdfa);border-left:1px solid #e3e9e2;border-radius:7px;--track-pad:6px}
+.gridline{position:absolute;z-index:0;left:0;right:0;border-top:1px solid #edf0eb;pointer-events:none}
+.gridline.major{border-top-color:#e0e7df}
+.task{position:absolute;left:var(--track-pad);right:var(--track-pad);z-index:2;border-radius:9px;border:1px solid #193b2010;background:var(--task-bg);color:var(--task-ink,#28372f);padding:10px 38px 8px 13px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:3px;transition:background .17s,box-shadow .17s}
+.task:hover{box-shadow:inset 0 0 0 1px #364c3740;z-index:5}
+.task.active{box-shadow:inset 0 0 0 2px #51795d80}
+.task.long{justify-content:flex-start;padding-top:15px}
+.task.short{padding:3px 32px 3px 11px;gap:0}
+.task-title{font-size:13px;font-weight:730;line-height:1.35;letter-spacing:-.01em}
+.task-icon{margin-right:8px;font-size:14px}
+.task-time{font-size:10px;opacity:.65;font-weight:640;font-variant-numeric:tabular-nums}
+.task-desc{font-size:11px;line-height:1.5;opacity:.8;margin-top:3px}
+.task.short .task-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task.short .task-time{font-size:10px}
+.color{position:absolute;top:9px;right:10px;width:23px;height:23px;padding:0;border-radius:50%;border:2px solid #ffffffb8;outline:1px solid #39483925;background:transparent;cursor:pointer;opacity:.6}
+.task:hover .color,.color:focus{opacity:1}
+.color::-webkit-color-swatch-wrapper{padding:0}
+.color::-webkit-color-swatch{border:none;border-radius:50%}
+.color::-moz-color-swatch{border:none;border-radius:50%}
+.task.short .color{top:50%;transform:translateY(-50%);right:8px;width:17px;height:17px}
+.pill-reminder{display:inline-flex;align-items:center;gap:7px;max-width:fit-content;background:#ffffffb5;border:1px solid #345b3930;padding:9px 11px;border-radius:10px;margin-top:14px;font-size:12px;font-weight:720;color:#3b5746}
+.pill-reminder small{display:block;font-size:10px;font-weight:550;color:#6c766e;margin-top:4px}
+.task.afternoon{padding-right:13px}
+.task.afternoon .color{top:13px;right:13px}
+.reminder-label{margin:9px 0 0;font-size:11px;color:#6b7e6f}
+.reminder-row{position:absolute;left:14px;right:14px;min-height:39px;display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid #ffffffa8;background:#ffffffb8;border-radius:9px;color:#3b4b3e;transition:background .2s}
+.reminder-row.due{background:#fff0c4;border-color:#f2c669}
+.reminder-row.done{opacity:.55}
+.reminder-row input[type=checkbox]{width:16px;height:16px;accent-color:#458362;flex:0 0 16px;cursor:pointer}
+.reminder-row input[type=time]{border:0;background:transparent;width:75px;min-width:75px;color:#596b5d;font-weight:760;font-size:12px;cursor:pointer;font-variant-numeric:tabular-nums}
+.reminder-row .rem-title{font-size:12px;font-weight:690;line-height:1.35}
+.reminder-row .rem-title small{display:block;font-weight:500;color:#778476;font-size:10px;margin-top:2px}
+.evening-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:17px}
+.segmented{display:flex;align-items:center;gap:3px;background:#f3f5f1;border:1px solid #e9eee6;border-radius:12px;padding:4px}
+.segmented button{padding:9px 12px;border:0;background:transparent;border-radius:8px;color:#718076;font-size:12px;font-weight:700;white-space:nowrap}
+.segmented button[aria-pressed=true]{background:#fff;color:#2b4634;box-shadow:0 2px 9px #28382a15}
+.evening-tags{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-left:66px;margin-bottom:11px}
+.evening-tag{background:#f6f7f4;color:#627164;display:flex;justify-content:center;align-items:center;gap:7px;padding:10px 6px;border-radius:9px;font-size:12px;font-weight:710}
+.evening-tag:before{content:"";width:8px;height:8px;border-radius:50%;background:#90ae99}
+.evening-tag[data-track=wash]:before{background:#b4a2d0}
+.task[data-track=both]{left:6px;right:6px}
+.task[data-track=dry]{left:6px;right:auto;width:calc(50% - 9px)}
+.task[data-track=wash]{left:auto;right:6px;width:calc(50% - 9px)}
+.lane-divider{position:absolute;z-index:1;top:calc(135 * var(--minute-size));left:50%;height:calc(145 * var(--minute-size));border-left:1px dashed #d6dcd4;pointer-events:none}
+.evening-layout[data-view=dry] .task[data-track=wash],.evening-layout[data-view=wash] .task[data-track=dry]{display:none}
+.evening-layout[data-view=dry] .task[data-track=dry],.evening-layout[data-view=wash] .task[data-track=wash]{left:6px;right:6px;width:auto}
+.evening-layout[data-view=dry] .lane-divider,.evening-layout[data-view=wash] .lane-divider{display:none}
+.evening-layout[data-view=dry] .evening-tags,.evening-layout[data-view=wash] .evening-tags{grid-template-columns:1fr}
+.evening-layout[data-view=dry] .evening-tag[data-track=wash],.evening-layout[data-view=wash] .evening-tag[data-track=dry]{display:none}
+.end{display:flex;align-items:center;gap:9px;margin:9px 0 0 66px;font-size:12px;font-weight:730;color:#497157}
+.end .end-dot{width:8px;height:8px;background:#5d8d6a;border-radius:50%}
+.end time{font-weight:620;color:#8c9c8e}
+.now-line{display:none;position:absolute;left:-7px;right:-3px;height:2px;z-index:20;pointer-events:none;background:var(--red);box-shadow:0 0 8px #e34f5242}
+.now-line.visible{display:block}
+.now-line:before{content:"";position:absolute;left:-6px;top:-5px;width:12px;height:12px;background:var(--red);border:3px solid white;outline:2px solid var(--red);border-radius:50%}
+.now-flag{position:absolute;right:0;top:-27px;background:var(--red);color:white;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.morning .task{border-radius:10px}
+.morning .task-title{font-size:15px}
+.morning .task-time{font-size:11px}
+.morning .task.short .task-title{font-size:13px}
+.morning .task.short .task-time{font-size:10px}
+.morning .task .task-desc{font-size:11px}
+.light-note{display:inline-flex;align-items:center;gap:7px;color:#839386;font-size:11px;margin-left:5px}
+.light-note:before{content:"";width:17px;height:2px;background:var(--red)}
+@media(max-width:760px){
+.page{width:min(100% - 24px,1050px);padding-top:14px}
+.top{padding-bottom:20px}
+.brandmark{width:39px;height:39px;font-size:21px}
+.brand{gap:10px}
+.kicker{font-size:9px}
+h1{font-size:26px}
+.clock{font-size:19px}
+.clock-box{min-width:120px}
+.now-activity{font-size:10px;max-width:128px}
+.nav{gap:7px}
+.nav a{padding:9px 11px;font-size:12px}
+.nav a small{display:none}
+.nav .spacer{flex-basis:100%;height:0}
+.section{border-radius:18px;padding:18px 12px 21px;margin-bottom:16px}
+.section-header{gap:7px;margin-bottom:14px}
+.section-name h2{font-size:20px}
+.section-subtitle{font-size:11px}
+.section-range{font-size:10px;padding:8px}
+.rail{width:49px;flex-basis:49px}
+.tick{right:6px;font-size:9px}
+.section-note{margin-left:49px}
+.task{padding:6px 29px 6px 8px}
+.task-title{font-size:12px}
+.task-icon{font-size:12px;margin-right:6px}
+.task-time{font-size:9px}
+.task-desc{font-size:10px}
+.task.short{padding:3px 24px 3px 7px}
+.task.short .task-title{font-size:11px}
+.task.short .task-time{font-size:9px}
+.color{width:19px;height:19px;top:8px;right:6px}
+.task.short .color{right:4px;width:15px;height:15px}
+.task.long{padding-top:10px}
+.morning .task-title{font-size:13px}
+.morning .task.short .task-title{font-size:12px}
+.pill-reminder{font-size:11px;padding:8px;margin-top:9px}
+.reminder-row{left:7px;right:7px;padding:5px;gap:5px}
+.reminder-row .rem-title{font-size:10px}
+.reminder-row .rem-title small{font-size:9px}
+.reminder-row input[type=time]{width:70px;min-width:70px;font-size:10px}
+.evening-tags{margin-left:49px}
+.segmented{width:100%}
+.segmented button{flex:1;padding:9px 4px;font-size:11px}
+.evening-tools .light-note{margin-left:2px}
+.end{margin-left:49px}
+.evening-layout[data-view=compare] .task[data-track=dry],.evening-layout[data-view=compare] .task[data-track=wash]{padding-left:7px;padding-right:20px}
+.evening-layout[data-view=compare] .task[data-track=dry] .task-title,.evening-layout[data-view=compare] .task[data-track=wash] .task-title{font-size:11px}
+.evening-layout[data-view=compare] .task[data-track=dry] .task-icon,.evening-layout[data-view=compare] .task[data-track=wash] .task-icon{display:none}
+.evening-layout[data-view=compare] .task[data-track=dry] .task-time,.evening-layout[data-view=compare] .task[data-track=wash] .task-time{font-size:9px}
+}
+@media(max-width:380px){
+.brandmark{display:none}
+.nav{gap:5px}
+.nav a{padding:8px 9px}
+.section-range{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
 </head>
 <body>
-  <div class="page">
-    <header class="compact-header" id="top">
-      <div class="heading-group">
-        <h1 id="schedule-title">晚间时间表</h1>
-        <div class="header-date"><span class="live-dot" aria-hidden="true"></span><time id="todayDate">正在读取日期…</time></div>
-      </div>
-      <div class="time-status" aria-live="off">
-        <div class="clock" id="clock">--:--:--</div>
-        <div class="status" id="currentActivity">读取当前时间…</div>
-      </div>
-    </header>
-
-    <main>
-      <section aria-labelledby="schedule-title">
-        <div class="workspace" id="workspace">
-          <div class="toolbar">
-            <div class="segmented" role="group" aria-label="选择晚间作息版本">
-              <button type="button" data-view-button="compare" aria-pressed="true">两种安排对比</button>
-              <button type="button" data-view-button="dry" aria-pressed="false">不洗头的晚上</button>
-              <button type="button" data-view-button="wash" aria-pressed="false">洗头的晚上</button>
-            </div>
-            <div class="action-group">
-              <span class="now-legend" id="lineLegend">红线 = 当前时间</span>
-              <button type="button" class="subtle-button" id="previewButton">预览 18:59</button>
-              <button type="button" class="subtle-button" id="resetColorsButton">重置配色</button>
-            </div>
-          </div>
-
-          <div class="mode-banner" id="previewBanner" data-open="false" role="status">
-            <span>正在预览 18:59 的时间线位置；真实时间仍在右上角显示。</span>
-            <button type="button" id="returnLiveButton">返回实时</button>
-          </div>
-
-          <div class="timeline-layout view-compare" id="timelineLayout">
-            <div class="timeline-head" aria-hidden="true">
-              <div class="rail-spacer"></div>
-              <div class="lane-labels">
-                <div class="lane-label" data-lane="dry"><span class="lane-indicator"></span>不洗头的晚上</div>
-                <div class="lane-label" data-lane="wash"><span class="lane-indicator"></span>洗头的晚上</div>
-              </div>
-            </div>
-            <div class="timeline-outer">
-              <div class="time-rail" id="timeRail" aria-hidden="true"></div>
-              <div class="timeline-plot" id="timelinePlot" aria-label="按真实分钟比例绘制的晚间时间轴">
-                <div class="lane-divider" aria-hidden="true"></div>
-                <div class="current-line" id="currentLine" data-visible="false" aria-hidden="true"><span class="line-time" id="lineTime">--:--</span></div>
-              </div>
-            </div>
-            <div class="end-note"><span class="end-time">23:30</span><span>☾ &nbsp;关灯，准备入睡</span></div>
-          </div>
-
-        </div>
-      </section>
-    </main>
+<div class="page">
+<header class="top">
+  <div class="brand"><div class="brandmark" aria-hidden="true">◷</div><div>
+    <p class="kicker">MY DAILY ROUTINE</p><h1>每日时间表</h1>
+    <div class="date" id="todayDate">正在读取日期…</div>
+  </div></div>
+  <div class="clock-box"><div class="clock" id="clock">--:--:--</div><div class="now-activity" id="currentActivity">正在读取时间…</div></div>
+</header>
+<nav class="nav" aria-label="三个时间段">
+ <a href="#morning" data-nav="morning">☀️ 早间 <small>07:50—09:00</small></a>
+ <a href="#day" data-nav="day">☕ 白天 <small>09:00—18:00</small></a>
+ <a href="#evening" data-nav="evening">🌙 晚上 <small>18:00—23:30</small></a>
+ <span class="spacer"></span>
+ <button class="btn" type="button" id="goNow">⌖ 定位当前</button>
+ <button class="btn" type="button" id="resetColors">重置配色</button>
+</nav>
+<main>
+<section class="section morning" id="morning" aria-labelledby="morningTitle">
+ <div class="section-header"><div>
+  <div class="section-id">01 / MORNING</div>
+  <div class="section-name"><span class="section-emoji">🌤️</span><h2 id="morningTitle">早间 · 起床出门</h2></div>
+  <p class="section-subtitle">起床、洗漱、护肤、早餐，再出发上班。</p>
+ </div><div class="section-range">07:50 — 09:00</div></div>
+ <div class="rail-layout" id="morningLayout">
+  <div class="rail" id="morningRail" style="--minutes:70;--minute-size:4.9px" aria-hidden="true"></div>
+  <div class="plot" id="morningPlot" style="--minutes:70;--minute-size:4.9px" aria-label="早间按分钟比例展示的时间表">
+   <div class="now-line" id="morningLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
   </div>
-
-  <script>
-    "use strict";
-    // 作息安排完整取自上传的《作息表_纵向时间轴_A4.pdf》；common=两种晚上共用。
-    const EVENTS = [
-      { id: "commute", track: "both", start: "18:00", end: "18:20", title: "下班、回家", icon: "🚶", color: "#dcebdd" },
-      { id: "settle", track: "both", start: "18:20", end: "18:30", title: "到家、换衣服，歇一会儿", icon: "🧥", color: "#e5e9f3" },
-      { id: "cook", track: "both", start: "18:30", end: "19:10", title: "做晚饭", icon: "🍳", color: "#ffe0b7" },
-      { id: "dinner", track: "both", start: "19:10", end: "19:35", title: "吃饭", icon: "🍚", color: "#ffeacc" },
-      { id: "dishes", track: "both", start: "19:35", end: "19:45", title: "洗碗、简单收拾厨房", icon: "🧽", color: "#e0edf0" },
-      { id: "walk", track: "both", start: "19:45", end: "20:15", title: "出门轻松散步", icon: "🌿", color: "#d5ecdf" },
-      { id: "dry-shower", track: "dry", start: "20:15", end: "20:40", title: "洗澡、护肤", icon: "🚿", color: "#e6e4f6" },
-      { id: "wash-shower", track: "wash", start: "20:15", end: "20:40", title: "洗澡、洗头", icon: "🚿", color: "#dfe8f7" },
-      { id: "dry-free", track: "dry", start: "20:40", end: "22:40", title: "自由时间：看书或看影视", icon: "📖", color: "#e9e4f6" },
-      { id: "wash-hair", track: "wash", start: "20:40", end: "21:15", title: "吸水、吹头发、护肤", icon: "🪮", color: "#f8e1e6" },
-      { id: "wash-free", track: "wash", start: "21:15", end: "22:40", title: "看书、看一集剧", icon: "🎬", color: "#ece7f7" },
-      { id: "footbath", track: "both", start: "22:40", end: "22:55", title: "泡脚 + 听音乐（含准备和收拾）", icon: "🎵", color: "#fbe9d6" },
-      { id: "recovery", track: "both", start: "22:55", end: "23:10", title: "在床上坐着做已有的康复动作", icon: "🧘", color: "#deecdf" },
-      { id: "winddown", track: "both", start: "23:10", end: "23:30", title: "刷牙、上厕所、调暗灯光，安静下来", icon: "🌙", color: "#e4e8ed" }
-    ];
-
-    const START = 18 * 60, END = 23 * 60 + 30;
-    const $ = id => document.getElementById(id);
-    const plot = $("timelinePlot");
-    const layout = $("timelineLayout");
-    const clock = $("clock");
-    const line = $("currentLine");
-    const lineTime = $("lineTime");
-    const activity = $("currentActivity");
-    const previewBanner = $("previewBanner");
-    let currentView = window.innerWidth <= 690 ? "dry" : "compare";
-    let previewTime = null;
-    let lastActiveSignature = "";
-    let lastDateKey = "";
-
-    function toMinutes(hhmm) {
-      const [hours, minutes] = hhmm.split(":").map(Number);
-      return hours * 60 + minutes;
-    }
-    function readColor(id) {
-      try { return localStorage.getItem("evening-color-" + id); } catch (_) { return null; }
-    }
-    function storeColor(id, color) {
-      try { localStorage.setItem("evening-color-" + id, color); } catch (_) {}
-    }
-    function contrastColor(hex) {
-      const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
-        .map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-      const light = rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
-      return light < .38 ? "#ffffff" : "#25332b";
-    }
-    function styleEvent(el, color) {
-      el.style.setProperty("--block-bg", color);
-      el.style.setProperty("--block-ink", contrastColor(color));
-    }
-    function addTimelineLabels() {
-      for (let m = START; m <= END; m += 30) {
-        const diff = m - START;
-        const isHour = m % 60 === 0;
-        const label = document.createElement("span");
-        label.className = "time-tick" + (isHour ? " major" : "");
-        label.style.top = `calc(${diff} * var(--minute-height))`;
-        label.textContent = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-        $("timeRail").appendChild(label);
-        const gridline = document.createElement("div");
-        gridline.className = "time-grid" + (isHour ? " major" : "");
-        gridline.style.top = `calc(${diff} * var(--minute-height))`;
-        plot.appendChild(gridline);
-      }
-    }
-    const eventElements = new Map();
-    function addEvents() {
-      for (const item of EVENTS) {
-        const duration = toMinutes(item.end) - toMinutes(item.start);
-        const el = document.createElement("article");
-        el.className = "event";
-        el.dataset.track = item.track;
-        el.dataset.size = duration <= 15 ? "short" : duration >= 70 ? "long" : "regular";
-        el.setAttribute("aria-label", `${item.title}，${item.start} 到 ${item.end}`);
-        el.style.top = `calc(${toMinutes(item.start) - START} * var(--minute-height) + 2px)`;
-        el.style.height = `calc(${duration} * var(--minute-height) - 4px)`;
-        const main = document.createElement("div");
-        main.className = "event-main";
-        const icon = document.createElement("span");
-        icon.className = "event-symbol";
-        icon.setAttribute("aria-hidden", "true");
-        icon.textContent = item.icon;
-        const name = document.createElement("span");
-        name.className = "event-name";
-        name.textContent = item.title;
-        main.append(icon, name);
-        const times = document.createElement("div");
-        times.className = "event-times";
-        times.textContent = `${item.start} — ${item.end}`;
-        const color = document.createElement("input");
-        color.type = "color";
-        color.className = "color-picker";
-        color.setAttribute("aria-label", `修改「${item.title}」的背景颜色`);
-        color.title = `修改「${item.title}」背景色`;
-        color.value = readColor(item.id) || item.color;
-        color.addEventListener("input", () => { styleEvent(el, color.value); storeColor(item.id, color.value); });
-        styleEvent(el, color.value);
-        el.append(main, times, color);
-        plot.appendChild(el);
-        eventElements.set(item.id, el);
-      }
-    }
-    function setView(mode) {
-      currentView = mode;
-      layout.className = "timeline-layout view-" + mode;
-      document.querySelectorAll("[data-view-button]").forEach(button => {
-        button.setAttribute("aria-pressed", String(button.dataset.viewButton === mode));
-      });
-      updateClock();
-    }
-    function twoDigits(n) { return String(n).padStart(2, "0"); }
-    function hhmm(mins) {
-      return `${twoDigits(Math.floor(mins / 60))}:${twoDigits(Math.floor(mins % 60))}`;
-    }
-    function getCurrentItems(minutes) {
-      return EVENTS.filter(e => {
-        if (currentView !== "compare" && e.track !== "both" && e.track !== currentView) return false;
-        return minutes >= toMinutes(e.start) && minutes < toMinutes(e.end);
-      });
-    }
-    function updateClock() {
-      const now = new Date();
-      const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-      if (dateKey !== lastDateKey) {
-        $("todayDate").textContent = new Intl.DateTimeFormat("zh-CN", {
-          year: "numeric", month: "long", day: "numeric", weekday: "long"
-        }).format(now);
-        lastDateKey = dateKey;
-      }
-      const realMinute = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-      clock.textContent = `${twoDigits(now.getHours())}:${twoDigits(now.getMinutes())}:${twoDigits(now.getSeconds())}`;
-      const minute = previewTime == null ? realMinute : previewTime;
-      const activeEvents = minute >= START && minute < END ? getCurrentItems(minute) : [];
-      const currentSignature = activeEvents.map(e => e.id).join("-");
-      if (lastActiveSignature !== currentSignature) {
-        for (const [id, el] of eventElements) el.classList.toggle("is-active", activeEvents.some(e => e.id === id));
-        lastActiveSignature = currentSignature;
-      }
-      if (minute >= START && minute <= END) {
-        const pixelPerMinute = parseFloat(getComputedStyle(plot).getPropertyValue("--minute-height")) || 3.2;
-        line.style.top = `${(minute - START) * pixelPerMinute}px`;
-        line.dataset.visible = "true";
-        lineTime.textContent = hhmm(minute);
-      } else {
-        line.dataset.visible = "false";
-      }
-      if (minute < START) activity.textContent = "晚间计划将在 18:00 开始";
-      else if (minute >= END) activity.textContent = "今晚的安排已结束 · 好好休息";
-      else if (activeEvents.length === 1) activity.textContent = `现在 · ${activeEvents[0].title}`;
-      else if (activeEvents.length === 2) activity.textContent = `不洗头：${activeEvents[0].title} ｜ 洗头：${activeEvents[1].title}`;
-      else activity.textContent = "按自己的节奏，慢慢来";
-      if (previewTime != null) activity.textContent = `预览 18:59 · ${activity.textContent.replace(/^现在 · /, "")}`;
-    }
-    function togglePreview() {
-      previewTime = previewTime == null ? 18 * 60 + 59 : null;
-      $("previewButton").textContent = previewTime == null ? "预览 18:59" : "返回实时";
-      previewBanner.dataset.open = String(previewTime != null);
-      $("lineLegend").textContent = previewTime == null ? "红线 = 当前时间" : "红线 = 预览时间";
-      lastActiveSignature = "";
-      updateClock();
-      if (previewTime != null) line.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    function resetColors() {
-      for (const item of EVENTS) {
-        try { localStorage.removeItem("evening-color-" + item.id); } catch (_) {}
-        const el = eventElements.get(item.id);
-        if (!el) continue;
-        styleEvent(el, item.color);
-        el.querySelector(".color-picker").value = item.color;
-      }
-    }
-    function init() {
-      addTimelineLabels();
-      addEvents();
-      document.querySelectorAll("[data-view-button]").forEach(button => button.addEventListener("click", () => setView(button.dataset.viewButton)));
-      $("previewButton").addEventListener("click", togglePreview);
-      $("returnLiveButton").addEventListener("click", () => { if (previewTime != null) togglePreview(); });
-      $("resetColorsButton").addEventListener("click", resetColors);
-      setView(currentView);
-      setInterval(updateClock, 1000);
-      document.addEventListener("visibilitychange", () => { if (!document.hidden) updateClock(); });
-      window.addEventListener("resize", updateClock);
-    }
-    init();
-  </script>
+ </div>
+ <p class="section-note">原图标注：07:50–08:00 起床，之后洗漱至 08:15；09:00–09:10 可作为到岗缓冲。</p>
+</section>
+<section class="section" id="day" aria-labelledby="dayTitle">
+ <div class="section-header"><div>
+  <div class="section-id">02 / DAYTIME</div>
+  <div class="section-name"><span class="section-emoji">💼</span><h2 id="dayTitle">白天 · 工作与休息</h2></div>
+  <p class="section-subtitle">上午专注工作，午间休息；下午记得照顾好自己。</p>
+ </div><div class="section-range">09:00 — 18:00</div></div>
+ <div class="rail-layout" id="dayLayout">
+  <div class="rail" id="dayRail" style="--minutes:540;--minute-size:2px" aria-hidden="true"></div>
+  <div class="plot" id="dayPlot" style="--minutes:540;--minute-size:2px" aria-label="白天按分钟比例展示的时间表">
+   <div class="now-line" id="dayLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
+  </div>
+ </div>
+ <p class="section-note">下午提醒默认采用示例时间，可直接点击时间调整；勾选表示今天已完成。</p>
+</section>
+<section class="section" id="evening" aria-labelledby="eveningTitle">
+ <div class="section-header"><div>
+  <div class="section-id">03 / EVENING</div>
+  <div class="section-name"><span class="section-emoji">🌙</span><h2 id="eveningTitle">晚上 · 慢慢放松</h2></div>
+  <p class="section-subtitle">从下班回家，到 23:30 关灯准备入睡。</p>
+ </div><div class="section-range">18:00 — 23:30</div></div>
+ <div class="evening-layout" id="eveningLayout" data-view="compare">
+  <div class="evening-tools">
+   <div class="segmented" role="group" aria-label="选择晚间作息">
+    <button type="button" data-view="compare" aria-pressed="true">两种安排对比</button>
+    <button type="button" data-view="dry" aria-pressed="false">不洗头</button>
+    <button type="button" data-view="wash" aria-pressed="false">洗头</button>
+   </div>
+   <span class="light-note">红线表示当前时间</span>
+  </div>
+  <div class="evening-tags" aria-hidden="true">
+    <div class="evening-tag" data-track="dry">不洗头的晚上</div>
+    <div class="evening-tag" data-track="wash">洗头的晚上</div>
+  </div>
+  <div class="rail-layout">
+    <div class="rail" id="eveningRail" style="--minutes:330;--minute-size:3.3px" aria-hidden="true"></div>
+    <div class="plot" id="eveningPlot" style="--minutes:330;--minute-size:3.3px" aria-label="晚间按分钟比例展示的时间表">
+      <div class="lane-divider" aria-hidden="true"></div>
+      <div class="now-line" id="eveningLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
+    </div>
+  </div>
+  <div class="end"><span class="end-dot"></span><time>23:30</time><span>关灯，准备入睡</span></div>
+ </div>
+</section>
+</main></div>
+<script>
+"use strict";
+const SLICES = {
+ morning:{start:470,end:540,plot:"morningPlot",rail:"morningRail",line:"morningLine",size:4.9,ticks:[470,480,495,510,525,540]},
+ day:{start:540,end:1080,plot:"dayPlot",rail:"dayRail",line:"dayLine",size:2,ticks:[540,600,660,705,720,780,840,900,960,1020,1080]},
+ evening:{start:1080,end:1410,plot:"eveningPlot",rail:"eveningRail",line:"eveningLine",size:3.3,ticks:Array.from({length:12},(_,i)=>1080+i*30)}
+};
+const ITEMS = [
+ {id:"wake",s:"morning",start:"07:50",end:"08:15",title:"起床、洗漱",icon:"🛏️",desc:"07:50–08:00 起床，随后洗漱",color:"#dfe8ff"},
+ {id:"skin",s:"morning",start:"08:15",end:"08:30",title:"护肤、穿衣",icon:"🧴",color:"#fce3e4"},
+ {id:"breakfast-am",s:"morning",start:"08:30",end:"08:45",title:"早餐",icon:"🥐",color:"#ffead2"},
+ {id:"to-work",s:"morning",start:"08:45",end:"09:00",title:"去上班",icon:"🚶",color:"#daf2da"},
+ {id:"work-am",s:"day",start:"09:00",end:"11:45",title:"上午工作",icon:"💻",desc:"专注处理上午的工作任务",color:"#e1ebff",kind:"am"},
+ {id:"lunch-day",s:"day",start:"11:45",end:"13:00",title:"午饭与午间休息",icon:"🍱",color:"#fff0d5"},
+ {id:"work-pm",s:"day",start:"13:00",end:"18:00",title:"下午工作",icon:"🗂️",color:"#e1f2e3",kind:"pm"},
+ {id:"commute",s:"evening",track:"both",start:"18:00",end:"18:20",title:"下班、回家",icon:"🚶",color:"#dcebdd"},
+ {id:"settle",s:"evening",track:"both",start:"18:20",end:"18:30",title:"到家、换衣服，歇一会儿",icon:"🧥",color:"#e5e9f3"},
+ {id:"cook",s:"evening",track:"both",start:"18:30",end:"19:10",title:"做晚饭",icon:"🍳",color:"#ffe0b7"},
+ {id:"dinner",s:"evening",track:"both",start:"19:10",end:"19:35",title:"吃饭",icon:"🍚",color:"#ffeacc"},
+ {id:"dishes",s:"evening",track:"both",start:"19:35",end:"19:45",title:"洗碗、简单收拾厨房",icon:"🧽",color:"#e0edf0"},
+ {id:"walk",s:"evening",track:"both",start:"19:45",end:"20:15",title:"出门轻松散步",icon:"🌿",color:"#d5ecdf"},
+ {id:"dry-shower",s:"evening",track:"dry",start:"20:15",end:"20:40",title:"洗澡、护肤",icon:"🚿",color:"#e6e4f6"},
+ {id:"wash-shower",s:"evening",track:"wash",start:"20:15",end:"20:40",title:"洗澡、洗头",icon:"🚿",color:"#dfe8f7"},
+ {id:"dry-free",s:"evening",track:"dry",start:"20:40",end:"22:40",title:"自由时间：看书或看影视",icon:"📖",color:"#e9e4f6"},
+ {id:"wash-hair",s:"evening",track:"wash",start:"20:40",end:"21:15",title:"吸水、吹头发、护肤",icon:"🪮",color:"#f8e1e6"},
+ {id:"wash-free",s:"evening",track:"wash",start:"21:15",end:"22:40",title:"看书、看一集剧",icon:"🎬",color:"#ece7f7"},
+ {id:"footbath",s:"evening",track:"both",start:"22:40",end:"22:55",title:"泡脚 + 听音乐（含准备和收拾）",icon:"🎵",color:"#fbe9d6"},
+ {id:"recovery",s:"evening",track:"both",start:"22:55",end:"23:10",title:"在床上坐着做已有的康复动作",icon:"🧘",color:"#deecdf"},
+ {id:"winddown",s:"evening",track:"both",start:"23:10",end:"23:30",title:"刷牙、上厕所、调暗灯光，安静下来",icon:"🌙",color:"#e4e8ed"}
+];
+const REMINDERS = [
+ {id:"coffee",at:"14:30",name:"☕ 喝咖啡"},
+ {id:"fruit",at:"15:30",name:"🍎 吃水果"},
+ {id:"stretch",at:"16:30",name:"🚶 站起来走走"},
+ {id:"wrap",at:"17:30",name:"📋 总结当日工作、安排明天与今晚晚饭"}
+];
+const $=id=>document.getElementById(id);
+const toMin=t=>{const a=t.split(":").map(Number);return a[0]*60+a[1]};
+const pad=n=>String(n).padStart(2,"0");
+const format=m=>pad(Math.floor(m/60))+":"+pad(Math.floor(m%60));
+const saved=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const persist=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const del=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const taskEls=new Map();
+const remindEls=new Map();
+let eveningView=window.innerWidth<=760?"dry":"compare";
+let currentDateKey="";
+let lastStage="";
+function ink(hex){
+ const a=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));
+ return (a[0]*.2126+a[1]*.7152+a[2]*.0722)<.39?"#fff":"#26362e";
+}
+function paint(el,color){el.style.setProperty("--task-bg",color);el.style.setProperty("--task-ink",ink(color))}
+function tick(section){
+ const s=SLICES[section],rail=$(s.rail),plot=$(s.plot);
+ s.ticks.forEach(m=>{
+  const y=(m-s.start)*s.size;
+  const label=document.createElement("span");
+  label.className="tick"+(m%60===0||m===s.start?" major":"");
+  label.style.top=y+"px";label.textContent=format(m);rail.appendChild(label);
+  const div=document.createElement("div");
+  div.className="gridline"+(m%60===0?" major":"");
+  div.style.top=y+"px";plot.appendChild(div);
+ });
+}
+function addTask(x){
+ const section=SLICES[x.s],duration=toMin(x.end)-toMin(x.start),el=document.createElement("article");
+ el.className="task"+(duration<=15?" short":duration>=80?" long":"")+(x.kind==="pm"?" afternoon":"");
+ if(x.track)el.dataset.track=x.track;
+ el.dataset.id=x.id;
+ el.setAttribute("aria-label",x.title+"，"+x.start+" 到 "+x.end);
+ el.style.top="calc("+((toMin(x.start)-section.start))+" * var(--minute-size) + 2px)";
+ el.style.height="calc("+(duration)+" * var(--minute-size) - 4px)";
+ const title=document.createElement("div");title.className="task-title";
+ const icon=document.createElement("span");icon.className="task-icon";icon.setAttribute("aria-hidden","true");icon.textContent=x.icon;
+ const name=document.createElement("span");name.textContent=x.title;title.append(icon,name);el.appendChild(title);
+ const time=document.createElement("div");time.className="task-time";time.textContent=x.start+" — "+x.end;el.appendChild(time);
+ if(x.desc){const desc=document.createElement("div");desc.className="task-desc";desc.textContent=x.desc;el.appendChild(desc)}
+ if(x.kind==="am"){
+  const remind=document.createElement("div");remind.className="pill-reminder";
+  const body=document.createElement("div");
+  body.textContent="💊 上午提醒：专注药";
+  const sub=document.createElement("small");sub.textContent="按你已有的医嘱和服药时间安排";
+  body.appendChild(sub);remind.appendChild(body);el.appendChild(remind);
+ }
+ if(x.kind==="pm"){
+  const hint=document.createElement("div");hint.className="reminder-label";hint.textContent="今日的小提醒 · 时间可以修改";el.appendChild(hint);
+ }
+ const pick=document.createElement("input");pick.type="color";pick.className="color";pick.title="更改「"+x.title+"」背景色";pick.setAttribute("aria-label",pick.title);
+ const key=(x.s==="evening"?"evening-color-":"daily-color-")+x.id;
+ const value=saved(key)||x.color;
+ pick.value=/^#[0-9a-fA-F]{6}$/.test(value)?value:x.color;
+ paint(el,pick.value);
+ pick.addEventListener("input",()=>{paint(el,pick.value);persist(key,pick.value)});
+ el.appendChild(pick);
+ $(section.plot).appendChild(el);
+ taskEls.set(x.id,el);
+}
+function todayKey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function addReminders(){
+ const parent=taskEls.get("work-pm");
+ REMINDERS.forEach(r=>{
+  const row=document.createElement("div");row.className="reminder-row";
+  const check=document.createElement("input");check.type="checkbox";check.setAttribute("aria-label","完成："+r.name);
+  const time=document.createElement("input");time.type="time";time.setAttribute("aria-label","调整"+r.name+"的提醒时间");
+  time.value=saved("daily-time-"+r.id)||r.at;
+  const title=document.createElement("span");title.className="rem-title";title.textContent=r.name;
+  row.append(check,time,title);
+  check.addEventListener("change",()=>{persist("daily-done-"+todayKey(new Date())+"-"+r.id,check.checked?"1":"0");row.classList.toggle("done",check.checked)});
+  time.addEventListener("change",()=>{
+   const at=toMin(time.value||r.at);
+   if(at<13*60||at>=18*60){time.value=r.at;persist("daily-time-"+r.id,r.at)}
+   else persist("daily-time-"+r.id,time.value);
+   positionReminder(row,time.value);
+   updateClock();
+  });
+  parent.appendChild(row);
+  positionReminder(row,time.value);
+  remindEls.set(r.id,{row,check,time});
+ });
+}
+function positionReminder(row,t){
+ const offset=Math.max(0,Math.min(280,toMin(t)-13*60));
+ row.style.top="calc("+offset+" * var(--minute-size) - 2px)";
+}
+function changeView(view){
+ eveningView=view;
+ $("eveningLayout").dataset.view=view;
+ document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view===view)));
+ updateClock();
+}
+function getStage(min){
+ if(min>=470&&min<540)return "morning";
+ if(min>=540&&min<1080)return "day";
+ if(min>=1080&&min<=1410)return "evening";
+ return null;
+}
+function activeTask(min){
+ const section=getStage(min);
+ if(!section)return "";
+ const a=ITEMS.filter(x=>x.s===section&&toMin(x.start)<=min&&toMin(x.end)>min
+ &&(section!=="evening"||eveningView==="compare"||x.track==="both"||x.track===eveningView));
+ if(a.length===0)return "";
+ if(a.length===2)return "不洗头："+a[0].title+" · 洗头："+a[1].title;
+ return a[0].title;
+}
+function updateClock(){
+ const d=new Date(),min=d.getHours()*60+d.getMinutes()+d.getSeconds()/60,stage=getStage(min),key=todayKey(d);
+ $("clock").textContent=pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+ if(key!==currentDateKey){
+  $("todayDate").textContent=new Intl.DateTimeFormat("zh-CN",{year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(d);
+  currentDateKey=key;
+  remindEls.forEach((z,id)=>{z.check.checked=saved("daily-done-"+key+"-"+id)==="1";z.row.classList.toggle("done",z.check.checked)});
+ }
+ for(const [name,s] of Object.entries(SLICES)){
+  const line=$(s.line),isHere=stage===name;
+  line.classList.toggle("visible",isHere);
+  if(isHere){line.style.top=((min-s.start)*s.size)+"px";line.querySelector(".now-flag").textContent=format(min)}
+ }
+ const active=activeTask(min);
+ $("currentActivity").textContent=active?("现在 · "+active):min<470?"今天的计划将在 07:50 开始":"今日安排已结束 · 好好休息";
+ for(const x of ITEMS){
+  const el=taskEls.get(x.id);
+  if(el)el.classList.toggle("active",x.s===stage&&min>=toMin(x.start)&&min<toMin(x.end));
+ }
+ remindEls.forEach(z=>{
+  const at=toMin(z.time.value);
+  z.row.classList.toggle("due",stage==="day"&&min>=at&&min<at+15&&!z.check.checked);
+ });
+ if(lastStage!==stage){
+  document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("is-current",a.dataset.nav===stage));
+  lastStage=stage;
+ }
+}
+function resetColors(){
+ ITEMS.forEach(x=>{
+  const key=(x.s==="evening"?"evening-color-":"daily-color-")+x.id;
+  del(key);
+  const el=taskEls.get(x.id);
+  if(el){paint(el,x.color);el.querySelector(".color").value=x.color}
+ });
+}
+function jumpNow(){
+ const min=new Date().getHours()*60+new Date().getMinutes(),stage=getStage(min)|| (min<470?"morning":"evening");
+ const target=$(SLICES[stage].line);
+ if(stage===getStage(min)&&target.classList.contains("visible"))target.scrollIntoView({behavior:"smooth",block:"center"});
+ else $(stage).scrollIntoView({behavior:"smooth",block:"start"});
+}
+function init(){
+ Object.keys(SLICES).forEach(tick);
+ ITEMS.forEach(addTask);
+ addReminders();
+ document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
+ $("resetColors").addEventListener("click",resetColors);
+ $("goNow").addEventListener("click",jumpNow);
+ changeView(eveningView);
+ setInterval(updateClock,1000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)updateClock()});
+}
+init();
+</script>
 </body>
 </html>
