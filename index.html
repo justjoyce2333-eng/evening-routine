@@ -18,6 +18,8 @@
     "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
   font-synthesis:none;
 }
+/* All dimensions now include padding and borders: no task can spill past its minute slot. */
+*,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:106px}
 body{
   background:var(--bg);
@@ -193,7 +195,7 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
 .reminder-label{font-size:11px;color:#7a8a7d;margin:13px 0 0 31px}
 .reminder-row{
   position:absolute;left:15px;right:15px;min-height:44px;
-  display:grid;grid-template-columns:18px 102px minmax(0,1fr);align-items:center;gap:10px;
+  display:grid;grid-template-columns:18px 126px minmax(0,1fr);align-items:center;gap:12px;
   padding:7px 12px;border:1px solid #dfe9df;border-radius:10px;
   background:#ffffffda;color:#313c35;transition:background .2s;
 }
@@ -203,7 +205,7 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
   width:17px;height:17px;margin:0;padding:0;display:block;accent-color:var(--green-dark);cursor:pointer;
 }
 .reminder-row input[type=time]{
-  display:block;width:102px;min-width:0;height:32px;
+  display:block;width:100%;max-width:100%;min-width:0;height:32px;
   font-size:12px;font-weight:660;color:#5c6a60;line-height:1.2;
   background:#f5f8f5;border:1px solid #e8efe8;border-radius:7px;
   padding:3px 6px;font-variant-numeric:tabular-nums;cursor:pointer;
@@ -326,8 +328,8 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
  .task.afternoon .task-time{margin-left:25px}
  .pill-reminder{font-size:11px;padding:9px;margin-top:10px}
  .reminder-label{margin-left:25px;font-size:10px}
- .reminder-row{left:8px;right:8px;grid-template-columns:18px 83px minmax(0,1fr);gap:7px;min-height:42px;padding:6px 7px;border-radius:8px}
- .reminder-row input[type=time]{width:83px;padding:3px;font-size:10px}
+ .reminder-row{left:8px;right:8px;grid-template-columns:18px minmax(0,108px) minmax(0,1fr);gap:7px;min-height:42px;padding:6px 7px;border-radius:8px}
+ .reminder-row input[type=time]{width:100%;max-width:100%;padding:3px 5px;font-size:11px}
  .rem-title{font-size:11px;gap:6px}
  .rem-icon{display:none}
  .evening-tools{gap:8px}
@@ -349,11 +351,29 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
  .clock-box{min-width:97px}
  .section-header{flex-wrap:wrap}
  .section-range{margin-left:39px}
- .reminder-row{grid-template-columns:16px 78px minmax(0,1fr);gap:5px;padding:6px}
- .reminder-row input[type=time]{width:78px;font-size:10px}
+ .reminder-row{grid-template-columns:16px minmax(0,100px) minmax(0,1fr);gap:6px;padding:6px}
+ .reminder-row input[type=time]{width:100%;max-width:100%;font-size:10px;padding:3px}
  .rem-title{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* Small alignment and clipping refinements */
+.rail-layout{align-items:flex-start}
+.plot,.rail{min-height:0;box-sizing:border-box}
+.task{box-sizing:border-box}
+.task-title,.task-time,.task-desc{min-width:0}
+.task.short{min-height:0}
+.reminder-row{box-sizing:border-box}
+.reminder-row input[type=time]{box-sizing:border-box;overflow:hidden}
+.reminder-row input[type=time]::-webkit-datetime-edit{padding:0;white-space:nowrap}
+.reminder-row input[type=time]::-webkit-calendar-picker-indicator{
+  margin:0;padding:0;flex:0 0 16px;width:16px;height:16px;opacity:.65
+}
+@media(max-width:760px){
+ .reminder-row .rem-title{min-width:0;line-height:1.35}
+ .reminder-row .rem-text{overflow-wrap:anywhere}
+ .task.short .task-time{display:none}
+}
 
 </style>
 </head>
@@ -387,7 +407,6 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
    <div class="now-line" id="morningLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
   </div>
  </div>
- <p class="section-note">按照早间作息安排：07:50 起床，08:00 洗漱，08:15 护肤穿衣。</p>
 </section>
 <section class="section" id="day" aria-labelledby="dayTitle" hidden>
  <div class="section-header"><div>
@@ -401,7 +420,6 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
    <div class="now-line" id="dayLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
   </div>
  </div>
- <p class="section-note">下午提醒默认采用示例时间，可直接点击时间调整；勾选表示今天已完成。</p>
 </section>
 <section class="section" id="evening" aria-labelledby="eveningTitle" hidden>
  <div class="section-header"><div>
