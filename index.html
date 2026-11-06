@@ -7,209 +7,378 @@
 <meta name="description" content="早间、白天、晚上三段式每日时间表；实时红线、自由配色、晚间双版本与白天提醒。">
 <title>每日时间表 · 我的每一天</title>
 <style>
-:root{--ink:#23312a;--muted:#77857b;--paper:#fff;--bg:#f7f8f5;--red:#e34f52;--green:#426b57;font-family:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC","Microsoft YaHei",sans-serif;font-synthesis:none}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:20px}
-body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* Refined ChatGPT-inspired styling — no official OpenAI marks used. */
+:root{
+  --bg:#f7f7f8;--ink:#202123;--muted:#777b82;--paper:#fff;
+  --green:#0f9d78;--green-dark:#08785c;--red:#e1525b;
+  --stroke:#e7e7e7;--radius:18px;
+  color-scheme:light;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+    "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  font-synthesis:none;
+}
+html{scroll-behavior:smooth;scroll-padding-top:106px}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  margin:0;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
 button,input{font:inherit}
 button{cursor:pointer}
-button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #83b598;outline-offset:3px}
-.page{width:min(1050px,calc(100% - 36px));margin:auto;padding:28px 0 76px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:6px 2px 27px}
-.brand{display:flex;gap:15px;align-items:center}
-.brandmark{display:grid;place-items:center;background:#e6eee6;border-radius:15px;color:#427459;width:48px;height:48px;font-size:24px}
-.kicker{font-size:10px;letter-spacing:.19em;font-weight:800;color:#85948a;margin:0 0 5px}
-h1{font-size:clamp(25px,3.4vw,36px);letter-spacing:-.065em;margin:0 0 7px;font-weight:760}
-.date{font-size:12px;color:#78877c;font-variant-numeric:tabular-nums}
-.clock-box{text-align:right;min-width:158px}
-.clock{font-size:24px;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.045em}
-.now-activity{font-size:11px;color:#879288;line-height:1.5;margin-top:4px}
-.nav{position:sticky;top:0;z-index:40;background:#f7f8f5f2;backdrop-filter:blur(12px);padding:10px 4px;border-radius:14px;display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.nav button[data-nav]{text-decoration:none;display:flex;align-items:center;gap:8px;background:#fff;color:#607368;border:1px solid #e7ebe5;border-radius:11px;padding:11px 14px;font-size:13px;font-weight:730;transition:background .15s,border-color .15s}
-.nav button[data-nav] small{font-size:10px;color:#9aa59b;font-weight:600;white-space:nowrap}
-.nav button[data-nav].is-current{background:#e2eee5;border-color:#cce3d1;color:#2b6546}
+button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.page{width:min(1040px,calc(100% - 48px));padding:38px 0 76px;margin:auto}
+.top{padding:0 2px 25px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brandmark{
+  width:44px;height:44px;flex:0 0 44px;
+  display:grid;place-items:center;background:#202321;color:white;
+  border-radius:14px;box-shadow:0 2px 7px #10131313;
+}
+.brandmark svg{width:23px;height:23px;display:block}
+.kicker{
+  margin:0 0 3px;font-size:10px;font-weight:750;
+  color:var(--green-dark);letter-spacing:.16em;line-height:1.4
+}
+h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:735;letter-spacing:-.045em}
+.date{font-size:12px;color:#7e8480;line-height:1.5;font-variant-numeric:tabular-nums}
+.clock-box{
+  min-width:160px;display:flex;flex-direction:column;
+  text-align:right;align-items:flex-end;gap:2px;
+}
+.clock{font-size:23px;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:710;color:#252a26}
+.now-activity{margin:0;line-height:1.45;max-width:260px;font-size:11px;color:#858a85;overflow-wrap:anywhere}
+.nav{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:10px;margin:0 0 24px;border-radius:16px;background:#ffffffed;
+  border:1px solid #e9e9e9;box-shadow:0 8px 22px #14181706;backdrop-filter:blur(14px)
+}
+.nav button[data-nav]{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:11px 15px;min-height:42px;border:1px solid transparent;border-radius:10px;
+  background:transparent;color:#636a66;font-size:13px;font-weight:665;
+  line-height:1.2;white-space:nowrap;box-shadow:none;
+  transition:background .16s,color .16s,border-color .16s;
+}
+.nav button[data-nav] svg{display:block;width:17px;height:17px;flex:0 0 17px;stroke-width:1.85}
+.nav button[data-nav] small{font-size:10px;color:#969d98;white-space:nowrap;font-variant-numeric:tabular-nums}
+.nav button[data-nav]:hover{background:#f2f4f2}
+.nav button[data-nav].is-current{
+  background:#202321;color:#fff;border-color:#202321;box-shadow:0 3px 8px #10151218;
+}
+.nav button[data-nav].is-current small{color:#c1cbc5}
+.nav button[data-nav].is-current:hover{background:#202321}
 .nav .spacer{flex:1}
-.btn{background:#fff;color:#58665c;border:1px solid #e6ebe4;border-radius:10px;padding:10px 13px;font-size:12px;font-weight:700}
-.btn:hover,.nav button[data-nav]:hover{background:#f0f5ef}
-.section{background:#fff;border:1px solid #e8ece6;box-shadow:0 16px 45px #21362708;border-radius:22px;padding:24px 25px 26px;margin-bottom:23px;scroll-margin-top:16px}
-.section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
-.section-id{font-size:10px;letter-spacing:.15em;font-weight:800;color:#88978a;margin-bottom:7px}
-.section-name{display:flex;align-items:center;gap:10px}
-.section-name h2{font-size:23px;letter-spacing:-.055em;margin:0;font-weight:730}
-.section-emoji{display:grid;place-items:center;width:31px;height:31px;background:#f0f5ed;border-radius:10px;font-size:17px}
-.section-range{background:#f6f7f3;color:#7a877e;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:670;white-space:nowrap;font-variant-numeric:tabular-nums}
-.section-subtitle{font-size:12px;color:#89978b;margin:8px 0 0;line-height:1.6}
-.section-note{margin:12px 0 0 56px;color:#8b968c;font-size:11px;line-height:1.6}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:40px;border-radius:10px;border:1px solid #e3e5e2;
+  background:#fff;color:#56605a;padding:10px 13px;
+  font-size:12px;line-height:1.2;font-weight:675;white-space:nowrap;
+  transition:background .16s,border-color .16s;
+}
+.btn svg{width:15px;height:15px;display:block;flex:0 0 15px}
+.btn:hover{background:#f5f6f5;border-color:#d3dad5}
+.section{
+  background:#fff;border:1px solid var(--stroke);border-radius:20px;
+  padding:28px 30px 28px;margin:0;
+  box-shadow:0 12px 34px #111b1406;
+  scroll-margin-top:104px;
+}
+.section[hidden]{display:none!important}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 26px}
+.section-id{font-size:10px;line-height:1.3;font-weight:730;letter-spacing:.145em;color:#959b95;margin:0 0 12px}
+.section-name{display:flex;align-items:center;gap:11px}
+.section-name h2{margin:0;font-size:24px;font-weight:720;line-height:1.25;letter-spacing:-.035em}
+.section-emoji{
+  width:36px;height:36px;flex:0 0 36px;
+  display:grid;place-items:center;background:#eff7f2;
+  border:1px solid #e0ede4;border-radius:11px;color:var(--green-dark);
+}
+.section-emoji svg{display:block;width:19px;height:19px;stroke-width:1.9}
+.section-range{
+  border:1px solid #eee;background:#f7f8f7;border-radius:10px;color:#626b65;
+  font-weight:660;font-size:12px;line-height:1.2;padding:11px 13px;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.section-subtitle{font-size:12px;color:#8b918c;margin:10px 0 0;line-height:1.6}
+.section-note{margin:14px 0 0 67px;font-size:11px;color:#929a94;line-height:1.55}
 .rail-layout{display:flex;gap:0;position:relative}
-.rail{width:66px;flex:0 0 66px;position:relative;height:calc(var(--minutes) * var(--minute-size))}
-.tick{position:absolute;right:10px;transform:translateY(-50%);color:#919e95;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.tick:first-child{transform:translateY(0)}
-.tick.major{color:#65766a;font-weight:800}
-.plot{position:relative;min-width:0;flex:1;height:calc(var(--minutes) * var(--minute-size));background:linear-gradient(90deg,#f9fbf9,#fcfdfa);border-left:1px solid #e3e9e2;border-radius:7px;--track-pad:6px}
-.gridline{position:absolute;z-index:0;left:0;right:0;border-top:1px solid #edf0eb;pointer-events:none}
-.gridline.major{border-top-color:#e0e7df}
-.task{position:absolute;left:var(--track-pad);right:var(--track-pad);z-index:2;border-radius:9px;border:1px solid #193b2010;background:var(--task-bg);color:var(--task-ink,#28372f);padding:10px 38px 8px 13px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:3px;transition:background .17s,box-shadow .17s}
-.task:hover{box-shadow:inset 0 0 0 1px #364c3740;z-index:5}
-.task.active{box-shadow:inset 0 0 0 2px #51795d80}
-.task.long{justify-content:flex-start;padding-top:15px}
-.task.short{padding:3px 32px 3px 11px;gap:0}
-.task-title{font-size:13px;font-weight:730;line-height:1.35;letter-spacing:-.01em}
-.task-icon{margin-right:8px;font-size:14px}
-.task-time{font-size:10px;opacity:.65;font-weight:640;font-variant-numeric:tabular-nums}
-.task-desc{font-size:11px;line-height:1.5;opacity:.8;margin-top:3px}
-.task.short .task-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.task.short .task-time{font-size:10px}
-.color{position:absolute;top:9px;right:10px;width:23px;height:23px;padding:0;border-radius:50%;border:2px solid #ffffffb8;outline:1px solid #39483925;background:transparent;cursor:pointer;opacity:.6}
-.task:hover .color,.color:focus{opacity:1}
+.rail{flex:0 0 67px;width:67px;position:relative;height:calc(var(--minutes) * var(--minute-size))}
+.tick{
+  position:absolute;right:13px;transform:translateY(-50%);
+  text-align:right;font-size:11px;font-weight:530;color:#9ba29c;
+  white-space:nowrap;line-height:1;letter-spacing:-.015em;font-variant-numeric:tabular-nums;
+}
+.tick:first-child{transform:translateY(1px)}
+.tick.major{color:#68756c;font-weight:710}
+.plot{
+  --track-pad:6px;position:relative;min-width:0;flex:1;
+  height:calc(var(--minutes) * var(--minute-size));
+  border-left:1px solid #e4e9e4;
+  border-radius:7px;
+  background:linear-gradient(90deg,#fbfcfb,#fff);
+}
+.gridline{position:absolute;z-index:0;left:0;right:0;border-top:1px solid #f0f1f0;pointer-events:none}
+.gridline.major{border-top-color:#e8ece8}
+.task{
+  position:absolute;left:var(--track-pad);right:var(--track-pad);
+  z-index:2;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;
+  border-radius:10px;border:1px solid #16251b0d;
+  background:var(--task-bg);color:var(--task-ink,#202321);
+  padding:9px 42px 9px 16px;min-width:0;
+  transition:box-shadow .16s ease,background .16s ease;
+}
+.task:hover{box-shadow:inset 0 0 0 1px #20232133;z-index:3}
+.task.active{box-shadow:inset 0 0 0 2px #08785caa}
+.task.long{justify-content:flex-start;padding-top:17px}
+.task-title{
+  display:flex;align-items:center;gap:9px;min-width:0;
+  font-size:13px;font-weight:675;line-height:1.35;letter-spacing:-.01em;overflow-wrap:anywhere;
+}
+.task-title>span:last-child{min-width:0;flex:1}
+.task-icon{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;
+  width:22px;height:22px;padding:0;margin:0;
+  border-radius:7px;background:#ffffff94;
+  line-height:1;font-size:13px;vertical-align:middle;
+}
+.task-time{
+  margin-left:31px;font-size:11px;line-height:1.2;opacity:.68;
+  font-variant-numeric:tabular-nums;font-weight:575;white-space:nowrap
+}
+.task-desc{font-size:11px;opacity:.75;margin:3px 0 0 31px;line-height:1.45}
+.task.short{
+  flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;
+  padding:1px 39px 1px 13px;border-radius:8px;
+}
+.task.short .task-icon{display:none}
+.task.short .task-title{
+  display:block;flex:1;max-width:none;min-width:0;font-size:12px;
+  line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.task.short .task-time{
+  display:block;position:static;transform:none;
+  flex:0 0 auto;margin:0;font-size:10px;white-space:nowrap;line-height:1.15;
+}
+.color{
+  position:absolute;right:12px;top:9px;
+  display:block;width:23px;height:23px;padding:0;
+  border:3px solid #fffc;outline:1px solid #3243392b;
+  border-radius:50%;background:transparent;
+  cursor:pointer;opacity:.82;transition:transform .15s,opacity .15s;
+}
+.task:hover .color,.color:focus-visible{opacity:1;transform:scale(1.07)}
 .color::-webkit-color-swatch-wrapper{padding:0}
-.color::-webkit-color-swatch{border:none;border-radius:50%}
-.color::-moz-color-swatch{border:none;border-radius:50%}
-.task.short .color{top:50%;transform:translateY(-50%);right:8px;width:17px;height:17px}
-.pill-reminder{display:inline-flex;align-items:center;gap:7px;max-width:fit-content;background:#ffffffb5;border:1px solid #345b3930;padding:9px 11px;border-radius:10px;margin-top:14px;font-size:12px;font-weight:720;color:#3b5746}
-.pill-reminder small{display:block;font-size:10px;font-weight:550;color:#6c766e;margin-top:4px}
-.task.afternoon{padding-right:13px}
-.task.afternoon .color{top:13px;right:13px}
-.reminder-label{margin:9px 0 0;font-size:11px;color:#6b7e6f}
-.reminder-row{position:absolute;left:14px;right:14px;min-height:39px;display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid #ffffffa8;background:#ffffffb8;border-radius:9px;color:#3b4b3e;transition:background .2s}
-.reminder-row.due{background:#fff0c4;border-color:#f2c669}
-.reminder-row.done{opacity:.55}
-.reminder-row input[type=checkbox]{width:16px;height:16px;accent-color:#458362;flex:0 0 16px;cursor:pointer}
-.reminder-row input[type=time]{border:0;background:transparent;width:75px;min-width:75px;color:#596b5d;font-weight:760;font-size:12px;cursor:pointer;font-variant-numeric:tabular-nums}
-.reminder-row .rem-title{font-size:12px;font-weight:690;line-height:1.35}
-.reminder-row .rem-title small{display:block;font-weight:500;color:#778476;font-size:10px;margin-top:2px}
-.evening-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:17px}
-.segmented{display:flex;align-items:center;gap:3px;background:#f3f5f1;border:1px solid #e9eee6;border-radius:12px;padding:4px}
-.segmented button{padding:9px 12px;border:0;background:transparent;border-radius:8px;color:#718076;font-size:12px;font-weight:700;white-space:nowrap}
-.segmented button[aria-pressed=true]{background:#fff;color:#2b4634;box-shadow:0 2px 9px #28382a15}
-.evening-tags{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-left:66px;margin-bottom:11px}
-.evening-tag{background:#f6f7f4;color:#627164;display:flex;justify-content:center;align-items:center;gap:7px;padding:10px 6px;border-radius:9px;font-size:12px;font-weight:710}
-.evening-tag:before{content:"";width:8px;height:8px;border-radius:50%;background:#90ae99}
-.evening-tag[data-track=wash]:before{background:#b4a2d0}
+.color::-webkit-color-swatch{border:0;border-radius:50%}
+.color::-moz-color-swatch{border:0;border-radius:50%}
+.task.short .color{
+  top:50%;right:10px;width:19px;height:19px;transform:translateY(-50%);
+}
+.task.short:hover .color{transform:translateY(-50%) scale(1.08)}
+.task.afternoon{padding:17px 18px 10px 18px}
+.task.afternoon .color{top:14px;right:13px}
+.task.afternoon .task-title{padding-right:26px}
+.task.afternoon .task-time{margin-left:31px}
+.pill-reminder{
+  display:inline-flex;align-items:center;max-width:calc(100% - 4px);
+  border-radius:10px;margin-top:13px;padding:10px 12px;
+  background:#fffc;border:1px solid #d6e6d9;
+  color:#41664a;font-size:12px;font-weight:700;line-height:1.4;
+}
+.pill-reminder small{display:block;color:#788a7b;font-size:10px;font-weight:540;margin-top:3px}
+.reminder-label{font-size:11px;color:#7a8a7d;margin:13px 0 0 31px}
+.reminder-row{
+  position:absolute;left:15px;right:15px;min-height:44px;
+  display:grid;grid-template-columns:18px 102px minmax(0,1fr);align-items:center;gap:10px;
+  padding:7px 12px;border:1px solid #dfe9df;border-radius:10px;
+  background:#ffffffda;color:#313c35;transition:background .2s;
+}
+.reminder-row.due{background:#fff2d0;border-color:#e9c678}
+.reminder-row.done{opacity:.56}
+.reminder-row input[type=checkbox]{
+  width:17px;height:17px;margin:0;padding:0;display:block;accent-color:var(--green-dark);cursor:pointer;
+}
+.reminder-row input[type=time]{
+  display:block;width:102px;min-width:0;height:32px;
+  font-size:12px;font-weight:660;color:#5c6a60;line-height:1.2;
+  background:#f5f8f5;border:1px solid #e8efe8;border-radius:7px;
+  padding:3px 6px;font-variant-numeric:tabular-nums;cursor:pointer;
+}
+.rem-title{display:flex;align-items:center;gap:9px;min-width:0;font-size:12px;font-weight:670;line-height:1.35}
+.rem-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;line-height:1;background:#f1f5f1;border-radius:7px;font-size:12px}
+.rem-text{min-width:0;overflow-wrap:anywhere}
+.evening-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 17px}
+.segmented{
+  display:inline-flex;align-items:center;gap:4px;padding:4px;
+  background:#f4f5f4;border:1px solid #e8eae8;border-radius:12px;
+}
+.segmented button{
+  min-height:36px;border:0;border-radius:9px;padding:9px 13px;
+  background:transparent;color:#777d78;font-size:12px;line-height:1.2;font-weight:665;white-space:nowrap;
+}
+.segmented button:hover{background:#e8ece8}
+.segmented button[aria-pressed=true]{
+  color:#202321;background:white;box-shadow:0 1px 5px #26382b18;
+}
+.evening-tags{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 12px 67px}
+.evening-tag{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  min-height:39px;background:#f7f8f7;border-radius:9px;
+  font-size:12px;font-weight:650;color:#7a867c;
+}
+.evening-tag:before{content:"";display:block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#87aa93}
+.evening-tag[data-track=wash]:before{background:#b1a0c9}
 .task[data-track=both]{left:6px;right:6px}
 .task[data-track=dry]{left:6px;right:auto;width:calc(50% - 9px)}
 .task[data-track=wash]{left:auto;right:6px;width:calc(50% - 9px)}
-.lane-divider{position:absolute;z-index:1;top:calc(135 * var(--minute-size));left:50%;height:calc(145 * var(--minute-size));border-left:1px dashed #d6dcd4;pointer-events:none}
-.evening-layout[data-view=dry] .task[data-track=wash],.evening-layout[data-view=wash] .task[data-track=dry]{display:none}
-.evening-layout[data-view=dry] .task[data-track=dry],.evening-layout[data-view=wash] .task[data-track=wash]{left:6px;right:6px;width:auto}
-.evening-layout[data-view=dry] .lane-divider,.evening-layout[data-view=wash] .lane-divider{display:none}
-.evening-layout[data-view=dry] .evening-tags,.evening-layout[data-view=wash] .evening-tags{grid-template-columns:1fr}
-.evening-layout[data-view=dry] .evening-tag[data-track=wash],.evening-layout[data-view=wash] .evening-tag[data-track=dry]{display:none}
-.end{display:flex;align-items:center;gap:9px;margin:9px 0 0 66px;font-size:12px;font-weight:730;color:#497157}
-.end .end-dot{width:8px;height:8px;background:#5d8d6a;border-radius:50%}
-.end time{font-weight:620;color:#8c9c8e}
-.now-line{display:none;position:absolute;left:-7px;right:-3px;height:2px;z-index:20;pointer-events:none;background:var(--red);box-shadow:0 0 8px #e34f5242}
-.now-line.visible{display:block}
-.now-line:before{content:"";position:absolute;left:-6px;top:-5px;width:12px;height:12px;background:var(--red);border:3px solid white;outline:2px solid var(--red);border-radius:50%}
-.now-flag{position:absolute;right:0;top:-27px;background:var(--red);color:white;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
-.morning .task{border-radius:10px}
-.morning .task-title{font-size:15px}
-.morning .task-time{font-size:11px}
-.morning .task.short .task-title{font-size:13px}
-.morning .task.short .task-time{font-size:10px}
-.morning .task .task-desc{font-size:11px}
-.light-note{display:inline-flex;align-items:center;gap:7px;color:#839386;font-size:11px;margin-left:5px}
-.light-note:before{content:"";width:17px;height:2px;background:var(--red)}
-@media(max-width:760px){
-.page{width:min(100% - 24px,1050px);padding-top:14px}
-.top{padding-bottom:20px}
-.brandmark{width:39px;height:39px;font-size:21px}
-.brand{gap:10px}
-.kicker{font-size:9px}
-h1{font-size:26px}
-.clock{font-size:19px}
-.clock-box{min-width:120px}
-.now-activity{font-size:10px;max-width:128px}
-.nav{gap:7px}
-.nav button[data-nav]{padding:9px 11px;font-size:12px}
-.nav button[data-nav] small{display:none}
-.nav .spacer{flex-basis:100%;height:0}
-.section{border-radius:18px;padding:18px 12px 21px;margin-bottom:16px}
-.section-header{gap:7px;margin-bottom:14px}
-.section-name h2{font-size:20px}
-.section-subtitle{font-size:11px}
-.section-range{font-size:10px;padding:8px}
-.rail{width:49px;flex-basis:49px}
-.tick{right:6px;font-size:9px}
-.section-note{margin-left:49px}
-.task{padding:6px 29px 6px 8px}
-.task-title{font-size:12px}
-.task-icon{font-size:12px;margin-right:6px}
-.task-time{font-size:9px}
-.task-desc{font-size:10px}
-.task.short{padding:3px 24px 3px 7px}
-.task.short .task-title{font-size:11px}
-.task.short .task-time{font-size:9px}
-.color{width:19px;height:19px;top:8px;right:6px}
-.task.short .color{right:4px;width:15px;height:15px}
-.task.long{padding-top:10px}
-.morning .task-title{font-size:13px}
-.morning .task.short .task-title{font-size:12px}
-.pill-reminder{font-size:11px;padding:8px;margin-top:9px}
-.reminder-row{left:7px;right:7px;padding:5px;gap:5px}
-.reminder-row .rem-title{font-size:10px}
-.reminder-row .rem-title small{font-size:9px}
-.reminder-row input[type=time]{width:70px;min-width:70px;font-size:10px}
-.evening-tags{margin-left:49px}
-.segmented{width:100%}
-.segmented button{flex:1;padding:9px 4px;font-size:11px}
-.evening-tools .light-note{margin-left:2px}
-.end{margin-left:49px}
-.evening-layout[data-view=compare] .task[data-track=dry],.evening-layout[data-view=compare] .task[data-track=wash]{padding-left:7px;padding-right:20px}
-.evening-layout[data-view=compare] .task[data-track=dry] .task-title,.evening-layout[data-view=compare] .task[data-track=wash] .task-title{font-size:11px}
-.evening-layout[data-view=compare] .task[data-track=dry] .task-icon,.evening-layout[data-view=compare] .task[data-track=wash] .task-icon{display:none}
-.evening-layout[data-view=compare] .task[data-track=dry] .task-time,.evening-layout[data-view=compare] .task[data-track=wash] .task-time{font-size:9px}
+.lane-divider{
+  position:absolute;left:50%;top:calc(135 * var(--minute-size));
+  height:calc(145 * var(--minute-size));z-index:1;
+  border-left:1px dashed #d8ded8;pointer-events:none;
 }
-@media(max-width:380px){
-.brandmark{display:none}
-.nav{gap:5px}
-.nav button[data-nav]{padding:8px 9px}
-.section-range{font-size:9px}
+.evening-layout[data-view=dry] .task[data-track=wash],
+.evening-layout[data-view=wash] .task[data-track=dry]{display:none}
+.evening-layout[data-view=dry] .task[data-track=dry],
+.evening-layout[data-view=wash] .task[data-track=wash]{left:6px;right:6px;width:auto}
+.evening-layout[data-view=dry] .lane-divider,
+.evening-layout[data-view=wash] .lane-divider{display:none}
+.evening-layout[data-view=dry] .evening-tags,
+.evening-layout[data-view=wash] .evening-tags{grid-template-columns:1fr}
+.evening-layout[data-view=dry] .evening-tag[data-track=wash],
+.evening-layout[data-view=wash] .evening-tag[data-track=dry]{display:none}
+.light-note{
+  display:inline-flex;align-items:center;gap:9px;margin:0;
+  color:#818881;font-size:11px;line-height:1.3;
+}
+.light-note:before{content:"";width:19px;height:2px;background:var(--red);border-radius:2px}
+.end{display:flex;align-items:center;gap:10px;margin:11px 0 0 67px;color:#466852;font-weight:675;font-size:12px}
+.end .end-dot{display:block;width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--green)}
+.end time{color:#818e83;font-variant-numeric:tabular-nums}
+.now-line{
+  position:absolute;left:-8px;right:-4px;z-index:30;
+  display:none;height:2px;background:var(--red);pointer-events:none;
+  box-shadow:0 0 5px #e1525b3d;
+}
+.now-line.visible{display:block}
+.now-line:before{
+  content:"";position:absolute;left:-5px;top:-5px;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--red);border:3px solid white;outline:2px solid var(--red);
+}
+.now-flag{
+  position:absolute;right:1px;top:-29px;
+  background:var(--red);border-radius:7px;color:white;
+  font-size:11px;line-height:1.2;font-weight:760;
+  padding:7px 9px;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.morning .task{border-radius:10px}
+.morning .task-title{font-size:14px}
+.morning .task.short .task-title{font-size:12px}
+@media(max-width:760px){
+ html{scroll-padding-top:95px}
+ .page{width:calc(100% - 24px);padding:22px 0 44px}
+ .top{gap:9px;padding-bottom:19px}
+ .brand{gap:10px}
+ .brandmark{width:39px;height:39px;flex-basis:39px;border-radius:12px}
+ .brandmark svg{width:20px;height:20px}
+ h1{font-size:25px;margin-bottom:5px}
+ .kicker{font-size:9px}
+ .date{font-size:11px}
+ .clock-box{min-width:110px}
+ .clock{font-size:19px}
+ .now-activity{font-size:10px;max-width:135px}
+ .nav{gap:6px;padding:8px;margin-bottom:14px;border-radius:13px}
+ .nav button[data-nav]{flex:1;gap:6px;padding:9px 6px;min-height:40px;font-size:12px}
+ .nav button[data-nav] svg{width:16px;height:16px;flex-basis:16px}
+ .nav button[data-nav] small{display:none}
+ .nav .spacer{flex-basis:100%;height:0}
+ .nav .btn{flex:1;min-height:37px}
+ .section{padding:20px 13px 22px;border-radius:17px}
+ .section-header{margin-bottom:21px;gap:8px}
+ .section-id{font-size:9px;margin-bottom:10px}
+ .section-name{gap:8px}
+ .section-name h2{font-size:20px}
+ .section-emoji{width:31px;height:31px;flex-basis:31px;border-radius:10px}
+ .section-emoji svg{width:18px;height:18px}
+ .section-subtitle{font-size:11px;margin-top:9px}
+ .section-range{font-size:10px;padding:9px 7px}
+ .rail{flex-basis:50px;width:50px}
+ .tick{right:7px;font-size:9px}
+ .section-note{margin-left:50px;font-size:10px}
+ .task{padding:7px 32px 7px 9px;border-radius:8px}
+ .task.long{padding-top:13px}
+ .task-title{gap:6px;font-size:12px}
+ .task-icon{width:19px;height:19px;flex-basis:19px;font-size:11px;border-radius:6px}
+ .task-time{margin-left:25px;font-size:10px}
+ .task-desc{margin-left:25px;font-size:10px}
+ .morning .task-title{font-size:13px}
+ .task.short{padding:1px 28px 1px 8px}
+ .task.short .task-title{font-size:11px}
+ .task.short .task-time{display:none}
+ .color{width:20px;height:20px;top:8px;right:7px;border-width:2px}
+ .task.short .color{width:17px;height:17px;right:5px}
+ .task.afternoon{padding:14px 9px 8px 11px}
+ .task.afternoon .task-title{padding-right:25px}
+ .task.afternoon .task-time{margin-left:25px}
+ .pill-reminder{font-size:11px;padding:9px;margin-top:10px}
+ .reminder-label{margin-left:25px;font-size:10px}
+ .reminder-row{left:8px;right:8px;grid-template-columns:18px 83px minmax(0,1fr);gap:7px;min-height:42px;padding:6px 7px;border-radius:8px}
+ .reminder-row input[type=time]{width:83px;padding:3px;font-size:10px}
+ .rem-title{font-size:11px;gap:6px}
+ .rem-icon{display:none}
+ .evening-tools{gap:8px}
+ .segmented{width:100%}
+ .segmented button{flex:1;padding:9px 5px;font-size:11px}
+ .segmented button[data-view=compare]{display:none}
+ .evening-tags{margin-left:50px}
+ .evening-tag{font-size:11px;min-height:36px}
+ .end{margin-left:50px;font-size:11px}
+ .light-note{font-size:10px}
+ .evening-layout[data-view=compare] .task[data-track=dry],
+ .evening-layout[data-view=compare] .task[data-track=wash]{padding:6px 22px 6px 8px}
+}
+@media(max-width:420px){
+ .page{width:calc(100% - 18px)}
+ .brandmark{width:36px;height:36px;flex-basis:36px}
+ h1{font-size:22px}
+ .clock{font-size:17px}
+ .clock-box{min-width:97px}
+ .section-header{flex-wrap:wrap}
+ .section-range{margin-left:39px}
+ .reminder-row{grid-template-columns:16px 78px minmax(0,1fr);gap:5px;padding:6px}
+ .reminder-row input[type=time]{width:78px;font-size:10px}
+ .rem-title{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 
-.section[hidden]{display:none!important}
-.nav button[data-nav]{cursor:pointer;font-family:inherit}
-.nav button[data-nav].is-current{box-shadow:0 2px 10px #3a694018}
-.task.short{justify-content:center;align-items:stretch}
-.task.short .task-title{display:block;max-width:100%;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.task.short .task-icon,.task.short .task-time{display:none}
-.task:not(.short) .task-title{overflow-wrap:anywhere}
-.reminder-row .rem-title{white-space:normal;overflow-wrap:anywhere}
-@media(max-width:760px){
- .nav{top:0;margin-bottom:15px;gap:6px}
- .nav button[data-nav]{flex:1;justify-content:center;padding:10px 7px;gap:4px;white-space:nowrap}
- .nav .spacer{flex-basis:100%;height:0}
- .segmented button[data-view="compare"]{display:none}
- .task.short{padding-left:7px;padding-right:25px}
- .task.short .task-title{font-size:11px;line-height:1.2}
- .task.afternoon .task-title{padding-right:20px}
- .reminder-row{min-height:42px}
- .reminder-row .rem-title{line-height:1.35;font-size:11px}
-}
 </style>
 </head>
 <body>
 <div class="page">
 <header class="top">
-  <div class="brand"><div class="brandmark" aria-hidden="true">◷</div><div>
-    <p class="kicker">MY DAILY ROUTINE</p><h1>每日时间表</h1>
+  <div class="brand"><div class="brandmark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div>
+    <p class="kicker">DAILY ROUTINE</p><h1>每日时间表</h1>
     <div class="date" id="todayDate">正在读取日期…</div>
   </div></div>
   <div class="clock-box"><div class="clock" id="clock">--:--:--</div><div class="now-activity" id="currentActivity">正在读取时间…</div></div>
 </header>
 <nav class="nav" aria-label="三个时间段">
- <button type="button" data-nav="morning" aria-pressed="false">☀️ 早间 <small>07:50—09:00</small></button>
- <button type="button" data-nav="day" aria-pressed="false">☕ 白天 <small>09:00—18:00</small></button>
- <button type="button" data-nav="evening" aria-pressed="false">🌙 晚上 <small>18:00—23:30</small></button>
+ <button type="button" data-nav="morning" aria-pressed="false"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2M3.9 5.9l1.4 1.4M2 12h2M20 12h2M18.7 7.3l1.4-1.4"/><path d="M3 17h18M5 21h14"/><path d="M7 17a5 5 0 0 1 10 0"/></svg><span>早间</span> <small>07:50—09:00</small></button>
+ <button type="button" data-nav="day" aria-pressed="false"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18M10 13v2h4v-2"/></svg><span>白天</span> <small>09:00—18:00</small></button>
+ <button type="button" data-nav="evening" aria-pressed="false"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg><span>晚上</span> <small>18:00—23:30</small></button>
  <span class="spacer"></span>
- <button class="btn" type="button" id="goNow">⌖ 定位当前</button>
- <button class="btn" type="button" id="resetColors">重置配色</button>
+ <button class="btn" type="button" id="goNow"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>定位当前</span></button>
+ <button class="btn" type="button" id="resetColors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>重置配色</span></button>
 </nav>
 <main>
 <section class="section morning" id="morning" aria-labelledby="morningTitle">
  <div class="section-header"><div>
   <div class="section-id">01 / MORNING</div>
-  <div class="section-name"><span class="section-emoji">🌤️</span><h2 id="morningTitle">早间 · 起床出门</h2></div>
+  <div class="section-name"><span class="section-emoji"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2M3.9 5.9l1.4 1.4M2 12h2M20 12h2M18.7 7.3l1.4-1.4"/><path d="M3 17h18M5 21h14"/><path d="M7 17a5 5 0 0 1 10 0"/></svg></span><h2 id="morningTitle">早间 · 起床出门</h2></div>
   <p class="section-subtitle">起床、洗漱、护肤、早餐，再出发上班。</p>
  </div><div class="section-range">07:50 — 09:00</div></div>
  <div class="rail-layout" id="morningLayout">
@@ -223,7 +392,7 @@ h1{font-size:26px}
 <section class="section" id="day" aria-labelledby="dayTitle" hidden>
  <div class="section-header"><div>
   <div class="section-id">02 / DAYTIME</div>
-  <div class="section-name"><span class="section-emoji">💼</span><h2 id="dayTitle">白天 · 工作与休息</h2></div>
+  <div class="section-name"><span class="section-emoji"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18M10 13v2h4v-2"/></svg></span><h2 id="dayTitle">白天 · 工作与休息</h2></div>
   <p class="section-subtitle">上午专注工作，午间休息；下午记得照顾好自己。</p>
  </div><div class="section-range">09:00 — 18:00</div></div>
  <div class="rail-layout" id="dayLayout">
@@ -237,7 +406,7 @@ h1{font-size:26px}
 <section class="section" id="evening" aria-labelledby="eveningTitle" hidden>
  <div class="section-header"><div>
   <div class="section-id">03 / EVENING</div>
-  <div class="section-name"><span class="section-emoji">🌙</span><h2 id="eveningTitle">晚上 · 慢慢放松</h2></div>
+  <div class="section-name"><span class="section-emoji"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg></span><h2 id="eveningTitle">晚上 · 慢慢放松</h2></div>
   <p class="section-subtitle">从下班回家，到 23:30 关灯准备入睡。</p>
  </div><div class="section-range">18:00 — 23:30</div></div>
  <div class="evening-layout" id="eveningLayout" data-view="compare">
@@ -372,7 +541,12 @@ function addReminders(){
   const check=document.createElement("input");check.type="checkbox";check.setAttribute("aria-label","完成："+r.name);
   const time=document.createElement("input");time.type="time";time.setAttribute("aria-label","调整"+r.name+"的提醒时间");
   time.value=saved("daily-time-"+r.id)||r.at;
-  const title=document.createElement("span");title.className="rem-title";title.textContent=r.name;
+  const title=document.createElement("span");title.className="rem-title";
+  const icon=document.createElement("span");icon.className="rem-icon";icon.setAttribute("aria-hidden","true");
+  const label=document.createElement("span");label.className="rem-text";
+  const splitAt=r.name.indexOf(" ");
+  icon.textContent=r.name.slice(0,splitAt);label.textContent=r.name.slice(splitAt+1);
+  title.append(icon,label);
   row.append(check,time,title);
   check.addEventListener("change",()=>{persist("daily-done-"+todayKey(new Date())+"-"+r.id,check.checked?"1":"0");row.classList.toggle("done",check.checked)});
   time.addEventListener("change",()=>{
