@@ -182,7 +182,27 @@ button:disabled {opacity:.5;cursor:wait}
 .category-panel details {grid-column:2}
 .category-panel .empty {grid-column:1 / -1}
 @media(max-width:700px){.category-panel #category-breakdown{display:block}.category-pie{margin:8px auto 24px}}
-</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b><span class="divider"></span><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><button id="account" class="account-button">登录同步</button><button id="add" class="primary"><strong>＋</strong> 记一笔</button></div></header><main><div class="intro"><blockquote class="quote">“一粥一饭，当思来处不易。”</blockquote><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">本机保存</span></div></div><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月">‹</button><button id="today">今天</button><button id="next" aria-label="下个月">›</button></div></div><div class="week"></div><div id="grid"></div><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div></footer></section><section class="category-panel"><h2>本月分类占比</h2><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 添加支出</button></aside></div></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><button class="primary">保存</button><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><script>const $=s=>document.querySelector(s);
+
+.nav {height:62px}
+.nav #add, #addday {width:140px;height:40px;padding:0 16px;font-size:13px}
+#addday {align-self:flex-end;flex-shrink:0}
+.calendar {padding-bottom:24px}
+.sidebar aside {display:flex;flex-direction:column;min-height:0}
+.sidebar #records {overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain}
+.sidebar .eyebrow,.sidebar .datehead,.sidebar .sum,.sidebar .listhead {flex-shrink:0}
+.category-panel footer {margin:20px 0 24px;padding:20px;border:0;border-radius:14px}
+.category-panel .spark {display:none}
+.category-pie {position:relative}
+.category-pie::after {content:"";position:absolute;inset:22%;background:var(--surface);border-radius:50%}
+.category-panel details[open] .category-entry {display:none}
+#category-dialog {width:min(560px,calc(100vw - 32px))}
+#category-tabs {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+#category-tabs button {padding:8px 14px;border-radius:999px;font-size:12px}
+.category-tab {background:var(--soft)}
+#category-items {max-height:55vh;overflow-y:auto;overscroll-behavior:contain}
+#category-items .category-entry {padding:15px 0;border-bottom:1px solid var(--line)}
+@media(max-width:700px){.nav{height:auto;min-height:58px}.sidebar aside{max-height:620px}.sidebar #records{max-height:300px;flex:auto}.nav #add{width:140px}.category-panel footer{gap:20px}.category-panel footer b{font-size:20px}}
+</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b><span class="divider"></span><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><button id="account" class="account-button">登录同步</button><button id="add" class="primary"><strong>＋</strong> 记一笔</button></div></header><main><div class="intro"><blockquote class="quote">“一粥一饭，当思来处不易。”</blockquote><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">本机保存</span></div></div><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月">‹</button><button id="today">今天</button><button id="next" aria-label="下个月">›</button></div></div><div class="week"></div><div id="grid"></div></section><section class="category-panel"><h2>本月支出&amp;占比</h2><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div></footer><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 添加支出</button></aside></div></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><button class="primary">保存</button><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><dialog id="category-dialog"><div class="dialoghead"><h2>分类明细</h2><button id="category-close" type="button" aria-label="关闭">×</button></div><div id="category-tabs"></div><div id="category-items"></div></dialog><script>const $=s=>document.querySelector(s);
 const colors=['#f3f4f0','#e4eee6','#c8dfd0','#99c7ae','#538c73','#2e6450'];
 const categories=['餐饮','医疗','交通','购物','其他'];
 const icons=['<path d="M5 3v6c0 3 5 3 5 0V3M7.5 3v18M18 21V3c-4 3-5 9 0 10"/>','<rect x="3" y="5" width="18" height="16" rx="4"/><path d="M9 5V3h6v2M12 9v8M8 13h8"/>','<rect x="5" y="3" width="14" height="15" rx="4"/><path d="M5 10h14M8 21l2-3m6 3-2-3M8 14h2m4 0h2"/>','<path d="M4 8h16l-1 13H5zM8 9V7a4 4 0 0 1 8 0v2"/>','<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8"/>'];
@@ -225,7 +245,7 @@ $('#categories').innerHTML = categories.map((category, index) =>
 ).join('');
 function render(){
  const y=selected.getFullYear(),m=selected.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),offset=(first.getDay()+6)%7, sums=Array(days).fill(0);
- const prefix=key(first).slice(0,7), records=ledgerEntries().filter(r=>r.date===key(selected));
+ const prefix=key(first).slice(0,7), records=ledgerEntries().filter(r=>r.date===key(selected)).sort((a,b)=>b.amount-a.amount);
  for(const r of ledgerEntries())if(r.date.startsWith(prefix+'-'))sums[+r.date.slice(-2)-1]+=r.amount;
  const max=Math.max(1,...sums),total=sums.reduce((a,b)=>a+b,0),level=v=>v?Math.min(5,Math.ceil(5*v/max)):0;
  $('#book').value=book;$('#month').textContent=y+'年 '+(m+1)+'月';$('#grid').replaceChildren();
@@ -373,7 +393,7 @@ function renderCategories(prefix, total) {
   summary.style.setProperty('--category-color', palette[index]);
   const labels = summary.querySelectorAll('.category-meta span');
   labels[0].textContent = money(amount);
-  labels[1].textContent = entries.length + ' 笔 · 展开';
+  labels[1].textContent = entries.length + ' 笔 · 查看';
   details.append(summary);
   for (const entry of entries) {
    const row = document.createElement('div');
@@ -389,9 +409,57 @@ function renderCategories(prefix, total) {
    row.append(label, value);
    details.append(row);
   }
+  summary.onclick = event => {
+   event.preventDefault();
+   showCategory(index);
+  };
   container.append(details);
  });
 }
+
+let activeCategory = 0;
+function showCategory(index) {
+ activeCategory = index;
+ const prefix = key(selected).slice(0,7);
+ const modal = $('#category-dialog');
+ $('#category-tabs').replaceChildren();
+ categories.forEach((name, category) => {
+  const button = document.createElement('button');
+  button.textContent = name;
+  button.className = category === index ? 'primary' : 'category-tab';
+  button.setAttribute('aria-pressed', category === index);
+  button.onclick = () => showCategory(category);
+  $('#category-tabs').append(button);
+ });
+ $('#category-items').replaceChildren();
+ const rows = ledgerEntries().filter(row => row.date.startsWith(prefix+'-') && row.c === index)
+  .sort((a,b)=>b.amount-a.amount || b.date.localeCompare(a.date));
+ for (const entry of rows) {
+  const item = document.createElement('div');
+  item.className = 'category-entry';
+  const text = document.createElement('div');
+  const name = document.createElement('span');
+  name.textContent = entry.name;
+  const date = document.createElement('small');
+  date.textContent = entry.date;
+  text.append(name,date);
+  const value = document.createElement('strong');
+  value.textContent = money(entry.amount);
+  item.append(text,value);
+  $('#category-items').append(item);
+ }
+ if (!rows.length) $('#category-items').textContent = '本月暂无此类支出';
+ if (!modal.open) modal.showModal();
+}
+$('#category-close').onclick = () => $('#category-dialog').close();
+const calendarObserver = new ResizeObserver(() => {
+ const height = $('.calendar').getBoundingClientRect().height;
+ $('.sidebar aside').style.height = window.innerWidth > 700 ? height + 'px' : '';
+});
+calendarObserver.observe($('.calendar'));
+window.addEventListener('resize', () => {
+ $('.sidebar aside').style.height = window.innerWidth > 700 ? $('.calendar').getBoundingClientRect().height+'px' : '';
+});
 </script><script>const CLOUD_URL = 'https://bewbguqoxymvlaosawly.supabase.co';
 const CLOUD_KEY = 'sb_publishable_OrjKOkKs5GfQq7PbnOORdA_GbLxHYuc';
 const cloud = window.supabase?.createClient(CLOUD_URL, CLOUD_KEY, {
@@ -470,6 +538,8 @@ function setAccount(user) {
  cloudRows = [];
  cloudReady = false;
  dialog.close();
+ $('#category-dialog').close();
+ $('#category-items').replaceChildren();
  $('#sync-status').textContent = user ? '正在同步…' : '本机保存';
  if (user) {book = 'mine'; selected = new Date();}
  updateAccount();
