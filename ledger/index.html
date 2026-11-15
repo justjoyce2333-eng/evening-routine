@@ -395,7 +395,35 @@ main {padding-top:20px}
 .day-empty svg {width:42px;height:42px;color:#9ba99c}
 .day-empty span {font-size:13px;color:var(--muted)}
 @media(max-width:700px){.sidebar #records.is-empty {min-height:180px}}
-</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><div class="brand-stack"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b></div><span class="divider"></span><div class="book-stack"><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">本机保存</span></div></div><div class="nav-account"><p class="nav-quote">一粥一饭，当思来处不易。</p><button id="account" class="account-button" type="button" aria-label="登录同步" title="登录同步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></button></div></div></header><main><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14 6 8 12 14 18"/></svg></button><button id="today">今天</button><button id="next" aria-label="下个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="10 6 16 12 10 18"/></svg></button></div></div><div class="week"></div><div id="grid"></div></section><section class="category-panel"><h2>本月支出&amp;占比</h2><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div><button id="summary-visibility" type="button" aria-label="显示本月和日均支出" aria-pressed="false" title="显示金额"></button></footer><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 添加支出</button></aside></div><section id="category-dialog" aria-label="分类支出明细"><div class="dialoghead"><h2>分类明细</h2></div><p id="category-summary"></p><div id="category-tabs"></div><div id="category-items"></div></section></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><button class="primary">保存</button><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><script>const $=s=>document.querySelector(s);
+
+header {position:relative}
+#profile-menu {position:absolute;z-index:30;right:max(18px,calc((100% - 1192px)/2));top:calc(100% - 4px);width:min(330px,calc(100vw - 36px));padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 48px #0002}
+.profile-identity {display:flex;align-items:center;gap:12px}
+#profile-avatar {width:36px;height:36px;flex-shrink:0;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center}
+#profile-avatar svg {width:20px;height:20px}
+.profile-identity div {min-width:0}.profile-identity strong,.profile-identity small {display:block;overflow-wrap:anywhere}
+.profile-identity small {margin-top:4px;font-size:11px;color:var(--muted)}
+.journey {margin:18px 0;padding:18px;background:var(--soft);border-radius:12px}
+.journey small {font-size:10px;color:var(--muted)}
+.journey div {margin-top:8px}.journey strong {font-size:36px;color:var(--accent);font-weight:650}
+.journey span,.journey p {font-size:12px;line-height:1.8}.journey p{margin:8px 0}
+#profile-menu > button {display:block;width:100%;text-align:left;padding:12px;border-radius:8px}
+#profile-menu > button:hover {background:var(--soft)}
+#profile-message:empty {display:none}
+:root[data-theme="dark"] {color-scheme:dark;--paper:#141917;--surface:#1e2521;--ink:#e8eee9;--muted:#a4b0a6;--line:#354038;--soft:#29332c;--accent:#a5d5b7}
+[data-theme="dark"] .sum,[data-theme="dark"] .category-panel footer,[data-theme="dark"] .category-panel details.category-selected,[data-theme="dark"] .category-panel details.category-selected:hover {background:#29392f}
+[data-theme="dark"] .category-panel footer #total {color:#b0dfc1}
+[data-theme="dark"] input,[data-theme="dark"] .category span {background:var(--soft);color:var(--ink)}
+[data-theme="dark"] .category input:checked+span {background:var(--ink);color:var(--paper)}
+[data-theme="dark"] .record:hover,[data-theme="dark"] .category-panel details:hover,[data-theme="dark"] .controls button:hover {background:#334138}
+[data-theme="dark"] .record,[data-theme="dark"] #category-items .category-entry {border-color:var(--line)}
+[data-theme="dark"] .cell.out {background:#202722;color:#768278}
+[data-theme="dark"] .nav select,[data-theme="dark"] .week {color:#b8c9bc}
+[data-theme="dark"] .primary,[data-theme="dark"] .nav #account {background:#e0e9e2;color:#18271e}
+[data-theme="dark"] .primary:hover,[data-theme="dark"] .nav #account:hover {background:#bfd3c5}
+[data-theme="dark"] #summary-visibility {color:#b0c6b7}
+[data-theme="dark"] .category-panel details summary:hover {background:transparent}
+</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><div class="brand-stack"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b></div><span class="divider"></span><div class="book-stack"><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">本机保存</span></div></div><div class="nav-account"><p class="nav-quote">一粥一饭，当思来处不易。</p><button id="account" class="account-button" type="button" aria-label="登录同步" title="登录同步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></button></div></div><section id="profile-menu" hidden aria-label="账户菜单"><div class="profile-identity"><span id="profile-avatar" aria-hidden="true"></span><div><strong id="profile-name"></strong><small id="profile-email"></small></div></div><div class="journey"><small>认真生活，慢慢积累</small><div><strong id="journey-days">0</strong><span> 天 · 留下了生活的账迹</span></div><p id="journey-note"></p><small id="journey-scope">累计有支出记录的日期，不要求连续</small></div><button id="theme-toggle" type="button" aria-pressed="false">切换至深色模式</button><button id="profile-auth" type="button">登录同步</button><p id="profile-message" role="status"></p></section></header><main><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14 6 8 12 14 18"/></svg></button><button id="today">今天</button><button id="next" aria-label="下个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="10 6 16 12 10 18"/></svg></button></div></div><div class="week"></div><div id="grid"></div></section><section class="category-panel"><h2>本月支出&amp;占比</h2><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div><button id="summary-visibility" type="button" aria-label="显示本月和日均支出" aria-pressed="false" title="显示金额"></button></footer><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 记一笔</button></aside></div><section id="category-dialog" aria-label="分类支出明细"><div class="dialoghead"><h2>分类明细</h2></div><p id="category-summary"></p><div id="category-tabs"></div><div id="category-items"></div></section></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><button class="primary">保存</button><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><script>const $=s=>document.querySelector(s);
 const colors=['#f3f4f0','#e3efe5','#b5d5bf','#76ac8c','#285d46'];
 let summaryVisible = false;
 const categories=['餐饮','医疗','交通','购物','其他'];
@@ -439,6 +467,7 @@ $('#categories').innerHTML = categories.map((category, index) =>
  (index === 0 ? ' checked' : '') + '><span>' + category + '</span></label>'
 ).join('');
 function render(){
+ if (typeof updateProfileMenu === "function") updateProfileMenu();
  const y=selected.getFullYear(),m=selected.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),offset=(first.getDay()+6)%7, sums=Array(days).fill(0);
  const prefix=key(first).slice(0,7), records=ledgerEntries().filter(r=>r.date===key(selected)).sort((a,b)=>b.amount-a.amount);
  for(const r of ledgerEntries())if(r.date.startsWith(prefix+'-'))sums[+r.date.slice(-2)-1]+=r.amount;
@@ -733,7 +762,7 @@ function showAccount() {
  accountMessage('');
  accountDialog.showModal();
 }
-$('#account').onclick = showAccount;
+
 $('#account-close').onclick = () => accountDialog.close();
 
 function describeError(error) {
@@ -765,6 +794,7 @@ function updateAccount() {
  loginForm.hidden = !!cloudUser;
  $('#account-email').textContent = cloudUser?.email || '';
  updateImportButton();
+ updateProfileMenu();
 }
 async function refreshCloud() {
  if (!cloudUser || refreshing || cloudSaving || dialog.open) return;
@@ -953,4 +983,64 @@ if (cloud) {
  $('#sync-status').textContent = '本机保存 · 登录服务加载失败，请刷新';
 }
 updateAccount();
+</script><script>
+const profileMenu=$('#profile-menu'), accountTrigger=$('#account');
+accountTrigger.setAttribute('aria-expanded','false');
+accountTrigger.setAttribute('aria-controls','profile-menu');
+let menuTimer;
+function setProfileOpen(open){
+ clearTimeout(menuTimer);
+ profileMenu.hidden=!open;
+ accountTrigger.setAttribute('aria-expanded',String(open));
+ if(open) updateProfileMenu();
+}
+function updateProfileMenu(){
+ const email=cloudUser?.email || '';
+ $('#profile-avatar').innerHTML=$('#account').innerHTML;
+ $('#profile-name').textContent=email ? email.split('@')[0] : '欢迎，认真生活的你';
+ $('#profile-email').textContent=email || '登录，让账本陪你走得更远';
+ const rows=cloudUser ? cloudRows : data.mine;
+ const days=new Set(rows.filter(row=>row.date<=key(new Date())).map(row=>row.date)).size;
+ $('#journey-days').textContent=String(days);
+ $('#journey-note').textContent=cloudUser&&!cloudReady ? '正在找回你的记账足迹…' : days===0 ? '从一笔开始，让每一份辛苦都有去处。' : days<7 ? '每一次记录，都是多了解自己一点。' : days<30 ? '你正在把小小的认真，变成自己的习惯。' : '这些日子的认真，都在悄悄成为你的底气。';
+ $('#journey-scope').textContent=(cloudUser?'我的云端账本':'我的本机账本')+' · 累计有记录的日期，不要求连续';
+ $('#profile-auth').textContent=cloudUser?'退出登录':'登录同步';
+}
+accountTrigger.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')setProfileOpen(true)});
+accountTrigger.onclick=()=>setProfileOpen(profileMenu.hidden);
+for(const el of [accountTrigger,profileMenu]){
+ el.addEventListener('pointerleave',()=>{menuTimer=setTimeout(()=>setProfileOpen(false),220)});
+ el.addEventListener('pointerenter',()=>clearTimeout(menuTimer));
+}
+document.addEventListener('click',e=>{if(!profileMenu.contains(e.target)&&!accountTrigger.contains(e.target))setProfileOpen(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!profileMenu.hidden){setProfileOpen(false);accountTrigger.focus()}});
+profileMenu.addEventListener('focusout',e=>{if(!profileMenu.contains(e.relatedTarget)&&e.relatedTarget!==accountTrigger)setProfileOpen(false)});
+$('#profile-auth').onclick=async()=>{
+ if(!cloudUser){setProfileOpen(false);showAccount();return}
+ const button=$('#profile-auth');button.disabled=true;
+ try{
+ const {error}=await cloud.auth.signOut({scope:'local'});
+ if(error)throw error;
+ setAccount(null);setProfileOpen(false);
+ }catch{$('#profile-message').textContent='退出失败，请重试';}
+ finally{button.disabled=false}
+};
+function applyTheme(dark){
+ document.documentElement.dataset.theme=dark?'dark':'light';
+ $('#theme-toggle').textContent=dark?'切换至浅色模式':'切换至深色模式';
+ $('#theme-toggle').setAttribute('aria-pressed',String(dark));
+}
+let savedDark=false;try{savedDark=localStorage.getItem('rizhang-theme')==='dark'}catch{}
+applyTheme(savedDark);
+$('#theme-toggle').onclick=()=>{
+ const dark=document.documentElement.dataset.theme!=='dark';
+ applyTheme(dark);try{localStorage.setItem('rizhang-theme',dark?'dark':'light')}catch{}
+};
+function updateDailyQuote(){
+ const quotes=['让每一份辛苦，都花在值得的地方。','记下一笔，是多了解自己一点。','钱是生活的工具，选择才是自己的方向。','喜欢的东西，可以先给自己一天考虑。','珍惜金钱，也珍惜创造它的时间。','不必苛责昨天，今天的一笔就是新的开始。','把钱花在真正在意的事上。','留一点余地，给未来的自己。','节制不是亏待自己，而是照顾长远的愿望。','小小的记录，让生活渐渐清楚。','愿每一次花费，都是清醒而自在的选择。','量入为出，也为快乐留一个位置。','慢慢积累，不必与别人比较。','值得的生活，由你自己定义。','看懂自己的需要，比追逐更多更重要。','今天认真记下的，是明天选择的底气。','一粥一饭，当思来处不易。','照顾好现在，也温柔地为未来打算。','每一次停下来想一想，都是在练习选择。','让收入有安排，让心里有余裕。','消费前问问自己：它会陪伴我多久？','把愿望写下来，让储蓄有一个方向。','允许偶尔的享受，也记得自己的计划。','关注每一笔，不必焦虑每一分。','少一点冲动，多一点真正的满足。','记录不是审判，是理解自己的开始。','为重要的事留钱，也为重要的人留时间。','财富的意义，是让生活多一些从容。','稳稳地走，也是一种很好的进步。','今天的小选择，正在靠近你想要的生活。','认真生活的每一天，都值得被看见。'];
+ const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
+ $('.nav-quote').textContent=quotes[n%quotes.length];
+}
+updateDailyQuote();setInterval(updateDailyQuote,60000);
+updateProfileMenu();
 </script></body></html>
