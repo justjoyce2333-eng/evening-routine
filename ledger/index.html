@@ -794,7 +794,7 @@ function updateAccount() {
  loginForm.hidden = !!cloudUser;
  $('#account-email').textContent = cloudUser?.email || '';
  updateImportButton();
- updateProfileMenu();
+ if (typeof updateProfileMenu === 'function') updateProfileMenu();
 }
 async function refreshCloud() {
  if (!cloudUser || refreshing || cloudSaving || dialog.open) return;
