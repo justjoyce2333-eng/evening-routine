@@ -377,6 +377,294 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
  .task.short .task-time{display:none}
 }
 
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   QUIET ROUTINE · refined visual language
+   Focus: content > controls > decoration.
+   Previously saved event colors and all behavior stay intact.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --bg:#f9faf8;
+  --paper:#ffffff;
+  --ink:#242b26;
+  --muted:#7c867e;
+  --stroke:#e8ece8;
+  --green:#147b60;
+  --green-dark:#126349;
+  --red:#df595b;
+}
+html{scroll-padding-top:92px}
+body{background:var(--bg);color:var(--ink);letter-spacing:-.007em}
+.page{width:min(936px,calc(100% - 48px));padding:38px 0 64px}
+.top{padding:4px 1px 30px;gap:24px}
+.brand{gap:13px}
+.brandmark{
+  width:39px;height:39px;flex-basis:39px;
+  background:#edf3ee;color:#335b47;
+  border:1px solid #e5eee8;border-radius:12px;box-shadow:none
+}
+.brandmark svg{width:21px;height:21px;stroke-width:1.75}
+h1{font-size:31px;font-weight:690;letter-spacing:-.052em;line-height:1.24;margin:0 0 5px}
+.date{font-size:12px;color:#8b928d;letter-spacing:.01em}
+.clock-box{gap:4px;min-width:160px}
+.clock{font-size:27px;font-weight:650;letter-spacing:-.05em;line-height:1.1}
+.now-activity{font-size:11px;color:#687c70;font-weight:540;line-height:1.4;max-width:280px}
+.nav{
+  top:0;z-index:45;
+  padding:10px 0 14px;margin:0 0 22px;
+  gap:7px;background:#f9faf8f2;
+  border:0;border-bottom:1px solid #e7ebe7;border-radius:0;
+  box-shadow:none;backdrop-filter:blur(16px)
+}
+.nav button[data-nav]{
+  min-height:42px;border-radius:11px;border:1px solid transparent;
+  padding:10px 14px;gap:9px;
+  font-size:13px;font-weight:640;color:#68756d;letter-spacing:0;
+  background:transparent;box-shadow:none;
+}
+.nav button[data-nav] svg{color:#839087;width:16px;height:16px;flex-basis:16px}
+.nav button[data-nav] small{font-size:10px;color:#a3aaa4;font-weight:530}
+.nav button[data-nav]:hover{background:#eff3ef}
+.nav button[data-nav].is-current,
+.nav button[data-nav].is-current:hover{
+  background:#26392f;border-color:#26392f;color:white;
+  box-shadow:none;
+}
+.nav button[data-nav].is-current svg{color:#d6e7da}
+.nav button[data-nav].is-current small{color:#c9d9ce}
+.nav .spacer{flex:1}
+.btn{
+  border:1px solid transparent;border-radius:10px;
+  min-height:39px;padding:9px 12px;
+  background:transparent;color:#6a766e;
+  font-size:12px;font-weight:590;gap:7px;
+}
+.btn svg{width:15px;height:15px}
+.btn:hover{background:#eef2ed;border-color:#e4eae4}
+.section{
+  margin:0;padding:29px 32px 31px;
+  border:1px solid #e9ede9;border-radius:18px;
+  box-shadow:0 3px 15px rgba(38,62,46,.022);
+  background:#fff;
+}
+.section[hidden]{display:none!important}
+.section-header{align-items:center;gap:18px;margin-bottom:26px}
+.section-name{gap:11px}
+.section-name h2{font-size:22px;font-weight:675;letter-spacing:-.04em}
+.section-emoji{
+  width:32px;height:32px;flex-basis:32px;
+  border:0;border-radius:10px;
+  background:#eef5ef;color:#4a765a
+}
+.section-emoji svg{width:17px;height:17px;stroke-width:1.8}
+.section-subtitle{display:none}
+.section-range{
+  background:transparent;border:0;
+  color:#939c94;font-size:12px;font-weight:555;
+  padding:6px 1px;letter-spacing:.005em
+}
+.rail{width:63px;flex-basis:63px}
+.tick{right:13px;font-size:11px;font-weight:490;color:#a1aaa1;letter-spacing:0}
+.tick.major{font-weight:650;color:#758477}
+.plot{
+  --track-pad:6px;
+  background:#fff;border-left:1px solid #e5eae5;
+  border-radius:0;
+}
+.gridline{border-color:#f2f4f1}
+.gridline.major{border-color:#ecefec}
+.task{
+  border-radius:10px;
+  border:1px solid color-mix(in srgb,var(--task-bg) 28%,#e4e9e3);
+  border-left:3px solid color-mix(in srgb,var(--task-bg) 55%,#6f8877);
+  background:color-mix(in srgb,var(--task-bg) 23%,white);
+  color:var(--task-ink,#253028);
+  padding:9px 43px 9px 14px;
+  gap:4px;
+  box-shadow:none;
+  transition:border-color .18s,background-color .18s;
+}
+.task:hover{box-shadow:none;border-color:color-mix(in srgb,var(--task-bg) 60%,#748b7c);z-index:4}
+.task.active{
+  box-shadow:inset 0 0 0 1px #26856665;
+  border-left-color:var(--green);
+}
+.task.long{
+  padding-top:18px;
+  background:color-mix(in srgb,var(--task-bg) 7%,white);
+  border-color:#e9eee8;
+  border-left:3px solid color-mix(in srgb,var(--task-bg) 50%,#688070);
+}
+.task.long:hover{border-color:#cedbd0;border-left-color:#4b7c5b}
+.task.long.active{border-left-color:var(--green)}
+.task-title{
+  gap:0;line-height:1.4;
+  font-size:14px;font-weight:665;
+  letter-spacing:-.018em;
+}
+.task-title>span:last-child{min-width:0}
+.task-icon{display:none!important}
+.task-time{
+  margin:0;font-size:11px;font-weight:500;
+  line-height:1.2;color:#7e877f;opacity:1;
+}
+.task-desc{margin:1px 0 0;font-size:11px;color:#87918a;opacity:1}
+.task.short{
+  border-radius:7px;padding:2px 40px 2px 12px;
+  gap:8px;
+}
+.task.short .task-title{
+  display:block;min-width:0;
+  font-size:12px;font-weight:625;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.task.short .task-time{font-size:10px;color:#8c958d}
+.color{
+  right:12px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;
+  border:3px solid #fff;outline:1px solid #778c7a52;
+  border-radius:50%;opacity:.75;
+}
+.task:hover .color,.color:focus-visible{
+  opacity:1;transform:translateY(-50%) scale(1.05)
+}
+.task.short .color{top:50%;right:10px;width:20px;height:20px;transform:translateY(-50%)}
+.task.short:hover .color{transform:translateY(-50%) scale(1.05)}
+.task.afternoon{padding:18px 18px 12px 18px}
+.task.afternoon .task-title{padding-right:27px}
+.task.afternoon .task-time{margin-left:0}
+.task.afternoon .color{right:13px;top:16px;transform:none}
+.task.afternoon:hover .color{transform:scale(1.05)}
+.pill-reminder{box-shadow:none}
+.reminder-row{
+  left:14px;right:14px;
+  min-height:43px;padding:7px 10px;
+  grid-template-columns:18px minmax(0,108px) minmax(0,1fr);
+  gap:11px;align-items:center;
+  border:1px solid #e6ebe6;
+  border-radius:10px;background:#ffffffed;
+  color:#344039;
+  box-shadow:none;z-index:3;
+}
+.reminder-row:hover{border-color:#cedfd1}
+.reminder-row.due{background:#faf4e5;border-color:#ddc9a0}
+.reminder-row.done{opacity:.58}
+.reminder-row input[type=checkbox]{
+  width:17px;height:17px;flex:none;
+  accent-color:var(--green);
+}
+.reminder-row input[type=time]{
+  width:100%;min-width:0;max-width:100%;height:30px;
+  font-size:11px;line-height:1.1;font-weight:585;
+  background:#f7f8f6;color:#526259;
+  border:1px solid transparent;border-radius:7px;
+  padding:3px 6px;
+}
+.reminder-row input[type=time]:hover{border-color:#dce7dc}
+.rem-title{gap:8px;font-size:12px;font-weight:590}
+.rem-icon{
+  flex:0 0 20px;width:20px;height:20px;
+  background:transparent;border-radius:0;
+  font-size:14px;filter:saturate(.6);opacity:.83
+}
+.rem-text{line-height:1.4}
+.evening-tools{margin-bottom:16px;gap:10px}
+.segmented{
+  padding:3px;gap:3px;border-radius:11px;
+  border:1px solid #e9ede9;background:#f5f7f4
+}
+.segmented button{
+  border-radius:8px;min-height:35px;padding:8px 13px;
+  font-size:12px;font-weight:580;color:#828c84;
+}
+.segmented button[aria-pressed=true]{
+  background:#fff;color:#374d3d;
+  box-shadow:0 1px 3px #20342613
+}
+.evening-tags{margin-left:63px;gap:9px;margin-bottom:11px}
+.evening-tag{
+  min-height:35px;font-size:11px;font-weight:570;
+  background:#f7f9f7;color:#8a958b;border-radius:8px
+}
+.evening-tag:before{width:7px;height:7px;flex-basis:7px;background:#9db0a2}
+.evening-tag[data-track=wash]:before{background:#b2a9c6}
+.lane-divider{border-left-color:#edf0ea}
+.light-note{font-size:11px;color:#99a29a}
+.light-note:before{background:var(--red);width:17px}
+.end{margin-left:63px;color:#627e67;font-size:11px}
+.now-line{background:var(--red);height:2px;box-shadow:none;z-index:20}
+.now-line:before{background:var(--red);outline-color:var(--red)}
+.now-flag{
+  background:var(--red);border-radius:7px;
+  padding:5px 8px;top:-25px;
+  font-size:11px;font-weight:680
+}
+.morning .task-title{font-size:14px}
+.morning .task.short .task-title{font-size:12px}
+@media(max-width:800px){
+  .page{width:calc(100% - 28px);padding:24px 0 42px}
+  .top{gap:14px;padding-bottom:23px}
+  .brandmark{width:36px;height:36px;flex-basis:36px;border-radius:10px}
+  .brandmark svg{width:19px;height:19px}
+  h1{font-size:26px}
+  .clock{font-size:23px}
+  .clock-box{min-width:118px}
+  .nav{padding:8px 0 12px;gap:5px;margin-bottom:17px}
+  .nav button[data-nav]{padding:10px 9px;gap:6px;font-size:12px;min-height:40px}
+  .nav button[data-nav] small{display:none}
+  .nav .spacer{flex-basis:100%;height:0}
+  .nav .btn{flex:1;padding:9px 10px;border:1px solid #e9ede9;background:#fff}
+  .section{padding:21px 17px 25px;border-radius:16px}
+  .section-header{gap:10px;margin-bottom:22px}
+  .section-name h2{font-size:21px}
+  .section-range{font-size:11px;padding:5px 0}
+  .rail{width:51px;flex-basis:51px}
+  .tick{right:8px;font-size:10px}
+  .task{padding:8px 32px 8px 10px}
+  .task.long{padding-top:13px}
+  .task-title{font-size:13px}
+  .task.short{padding:1px 28px 1px 8px}
+  .task.short .task-title{font-size:11px}
+  .task.short .task-time{display:none}
+  .color{right:7px;width:21px;height:21px}
+  .task.short .color{right:5px;width:18px;height:18px}
+  .task.afternoon{padding:14px 10px 10px}
+  .task.afternoon .task-title{padding-right:28px}
+  .reminder-row{left:8px;right:8px;grid-template-columns:17px minmax(0,102px) minmax(0,1fr);gap:7px;padding:6px 8px}
+  .reminder-row input[type=time]{font-size:11px;padding:3px}
+  .rem-title{font-size:11px;gap:5px}
+  .rem-icon{display:none}
+  .evening-tags{margin-left:51px}
+  .end{margin-left:51px}
+  .segmented{width:100%}
+  .segmented button{flex:1;padding:9px 5px}
+  .segmented button[data-view=compare]{display:none}
+  .light-note{margin-left:1px}
+}
+@media(max-width:440px){
+  .page{width:calc(100% - 20px)}
+  .top{align-items:center;gap:8px}
+  .brand{gap:9px}
+  h1{font-size:24px}
+  .date{font-size:11px}
+  .clock-box{min-width:102px;max-width:126px}
+  .clock{font-size:18px}
+  .now-activity{font-size:10px}
+  .nav button[data-nav]{flex:1 1 0;justify-content:center;padding:10px 7px}
+  .section{padding:19px 11px 23px}
+  .section-header{flex-wrap:wrap;gap:5px}
+  .section-name h2{font-size:20px}
+  .section-range{margin-left:42px}
+  .rail{width:45px;flex-basis:45px}
+  .tick{right:6px;font-size:9px}
+  .reminder-row{grid-template-columns:17px minmax(0,90px) minmax(0,1fr);gap:5px;padding:6px}
+  .reminder-row input[type=time]{font-size:10px;padding:3px 2px}
+  .rem-title{font-size:10px}
+  .evening-tags{margin-left:45px}
+  .end{margin-left:45px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -415,8 +703,8 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
   <p class="section-subtitle">上午专注工作，午间休息；下午记得照顾好自己。</p>
  </div><div class="section-range">09:00 — 18:00</div></div>
  <div class="rail-layout" id="dayLayout">
-  <div class="rail" id="dayRail" style="--minutes:540;--minute-size:2px" aria-hidden="true"></div>
-  <div class="plot" id="dayPlot" style="--minutes:540;--minute-size:2px" aria-label="白天按分钟比例展示的时间表">
+  <div class="rail" id="dayRail" style="--minutes:540;--minute-size:1.8px" aria-hidden="true"></div>
+  <div class="plot" id="dayPlot" style="--minutes:540;--minute-size:1.8px" aria-label="白天按分钟比例展示的时间表">
    <div class="now-line" id="dayLine" aria-hidden="true"><span class="now-flag">--:--</span></div>
   </div>
  </div>
@@ -454,7 +742,7 @@ h1{margin:0 0 5px;font-size:clamp(25px,3.4vw,32px);line-height:1.2;font-weight:7
 "use strict";
 const SLICES = {
  morning:{start:470,end:540,plot:"morningPlot",rail:"morningRail",line:"morningLine",size:4.9,ticks:[470,480,495,510,525,540]},
- day:{start:540,end:1080,plot:"dayPlot",rail:"dayRail",line:"dayLine",size:2,ticks:[540,600,660,705,720,780,840,900,960,1020,1080]},
+ day:{start:540,end:1080,plot:"dayPlot",rail:"dayRail",line:"dayLine",size:1.8,ticks:[540,600,660,705,720,780,840,900,960,1020,1080]},
  evening:{start:1080,end:1410,plot:"eveningPlot",rail:"eveningRail",line:"eveningLine",size:3.3,ticks:Array.from({length:12},(_,i)=>1080+i*30)}
 };
 const ITEMS = [
@@ -505,7 +793,7 @@ function ink(hex){
  const a=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));
  return (a[0]*.2126+a[1]*.7152+a[2]*.0722)<.39?"#fff":"#26362e";
 }
-function paint(el,color){el.style.setProperty("--task-bg",color);el.style.setProperty("--task-ink",ink(color))}
+function paint(el,color){el.style.setProperty("--task-bg",color);el.style.setProperty("--task-ink","#253028")}
 function tick(section){
  const s=SLICES[section],rail=$(s.rail),plot=$(s.plot);
  s.ticks.forEach(m=>{
