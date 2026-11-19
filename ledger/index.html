@@ -477,7 +477,8 @@ body>header{position:sticky;top:0;z-index:50}
 #logout-proceed:hover{background:#bd3030}
 #logout-error{color:#c43b3b;font-size:12px}
 #logout-error:empty{display:none}
-.entry-actions{display:flex;gap:12px}.entry-actions .primary{flex:1;width:auto}#delete-entry{border:1px solid #d24444;color:#c83b3b;border-radius:999px;padding:12px 24px;min-height:44px}#delete-entry:hover{background:#d2444410}[data-theme="dark"] #delete-entry{color:#ff9999;border-color:#e77474}</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><div class="brand-stack"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b></div><span class="divider"></span><div class="book-stack"><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">本机保存</span></div></div><div class="nav-account"><p class="nav-quote">一粥一饭，当思来处不易。</p><button id="account" class="account-button" type="button" aria-label="登录同步" title="登录同步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></button></div></div><section id="profile-menu" hidden aria-label="账户菜单"><div class="profile-identity"><span id="profile-avatar" aria-hidden="true"></span><div><strong id="profile-name"></strong><small id="profile-email"></small></div></div><div class="journey" title="累计有支出记录的日期，不要求连续"><div class="journey-label"><span>累计记账</span><small id="journey-scope"></small></div><div class="journey-value"><strong id="journey-days">0</strong><span>天</span></div></div><button id="theme-toggle" type="button" role="switch" aria-checked="false"><span class="theme-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg>深色模式</span><span class="theme-switch" aria-hidden="true"></span></button><button id="profile-auth" type="button">登录同步</button><p id="profile-message" role="status"></p></section></header><main><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14 6 8 12 14 18"/></svg></button><button id="today">今天</button><button id="next" aria-label="下个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="10 6 16 12 10 18"/></svg></button></div></div><div class="week"></div><div id="grid"></div></section><section class="category-panel"><h2>本月支出&amp;占比</h2><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div><button id="summary-visibility" type="button" aria-label="显示本月和日均支出" aria-pressed="false" title="显示金额"></button></footer><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 记一笔</button></aside></div><section id="category-dialog" aria-label="分类支出明细"><div class="dialoghead"><h2>分类明细</h2></div><p id="category-summary"></p><div id="category-tabs"></div><div id="category-items"></div></section></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><div class="entry-actions"><button class="primary">保存</button><button type="button" id="delete-entry" hidden>删除</button></div><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><script>const $=s=>document.querySelector(s);
+.entry-actions{display:flex;gap:12px}.entry-actions .primary{flex:1;width:auto}#delete-entry{border:1px solid #d24444;color:#c83b3b;border-radius:999px;padding:12px 24px;min-height:44px}#delete-entry:hover{background:#d2444410}[data-theme="dark"] #delete-entry{color:#ff9999;border-color:#e77474}#import-local{display:none!important}
+</style><link rel="icon" type="image/svg+xml" sizes="any" href="/evening-routine/ledger/favicon.svg?v=1"></head><body><header><div class="nav"><div class="brand-stack"><b class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg></span>日账</b></div><span class="divider"></span><div class="book-stack"><select id="book" aria-label="选择账本"><option value="demo">示例账本</option><option value="mine">我的账本</option></select><div class="syncbar"><button id="import-local" hidden></button><span id="sync-status" role="status">登录后同步</span></div></div><div class="nav-account"><p class="nav-quote">一粥一饭，当思来处不易。</p><button id="account" class="account-button" type="button" aria-label="登录同步" title="登录同步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></button></div></div><section id="profile-menu" hidden aria-label="账户菜单"><div class="profile-identity"><span id="profile-avatar" aria-hidden="true"></span><div><strong id="profile-name"></strong><small id="profile-email"></small></div></div><div class="journey" title="累计有支出记录的日期，不要求连续"><div class="journey-label"><span>累计记账</span><small id="journey-scope"></small></div><div class="journey-value"><strong id="journey-days">0</strong><span>天</span></div></div><button id="theme-toggle" type="button" role="switch" aria-checked="false"><span class="theme-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg>深色模式</span><span class="theme-switch" aria-hidden="true"></span></button><button id="profile-auth" type="button">登录同步</button><p id="profile-message" role="status"></p></section></header><main><div class="layout"><div class="calendar-column"><section class="calendar"><div class="monthbar"><h2 id="month"></h2><div class="controls"><button id="prev" aria-label="上个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14 6 8 12 14 18"/></svg></button><button id="today">今天</button><button id="next" aria-label="下个月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="10 6 16 12 10 18"/></svg></button></div></div><div class="week"></div><div id="grid"></div></section><section class="category-panel"><h2>本月支出&amp;占比</h2><footer><div><small>本月支出</small><b id="total"></b></div><div><small>日均支出</small><b id="avg"></b></div><div class="spark" aria-hidden="true"></div><button id="summary-visibility" type="button" aria-label="显示本月和日均支出" aria-pressed="false" title="显示金额"></button></footer><div id="category-breakdown"></div></section></div><div class="sidebar"><aside><div class="eyebrow"><i></i> 当日明细</div><div class="datehead"><h2 id="date"></h2><small id="weekday"></small></div><div class="sum"><small>当日支出</small><b id="daytotal"></b></div><div class="listhead">支出记录 <span id="count"></span></div><div id="records"></div><button class="primary" id="addday">＋ 记一笔</button></aside></div><section id="category-dialog" aria-label="分类支出明细"><div class="dialoghead"><h2>分类明细</h2></div><p id="category-summary"></p><div id="category-tabs"></div><div id="category-items"></div></section></div></main><dialog><form><div class="dialoghead"><h2>记一笔</h2><button type="button" id="close" aria-label="关闭">×</button></div><label>日期<input name="date" type="date" required></label><label>金额（元）<input name="amount" type="number" step=".01" min=".01" max="99999999" required></label><label>项目<input name="name" maxlength="40" required></label><fieldset class="categories"><legend>分类</legend><div id="categories"></div></fieldset><div class="entry-actions"><button class="primary">保存</button><button type="button" id="delete-entry" hidden>删除</button></div><small id="error" role="alert"></small></form></dialog><dialog id="account-dialog"><div class="dialoghead"><h2>云端账本</h2><button type="button" id="account-close" aria-label="关闭">×</button></div><form id="login-form"><label>邮箱<input name="email" type="email" autocomplete="email" required></label><label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" type="submit">登录</button><div class="auth-actions"><button id="signup" type="button">首次使用，注册账号</button><button id="reset-password" type="button">忘记密码</button></div></form><div id="signed-in" hidden><p id="account-email"></p><button id="logout" class="another">退出登录</button></div><form id="new-password" hidden><label>新密码<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="primary">更新密码</button></form><p id="account-message" role="status"></p></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.1/dist/umd/supabase.js" crossorigin="anonymous" integrity="sha384-qmLe2vls59SnfpN2OJ/tjAASSNP+R7nmj+MyytoaCmVRjJbVGsUaFkxJW4jGpaqh"></script><script>const $=s=>document.querySelector(s);
 const colors=['#f3f4f0','#e3efe5','#b5d5bf','#76ac8c','#285d46'];
 let summaryVisible = false;
 const categories=['餐饮','医疗','交通','购物','其他','娱乐'];
@@ -514,7 +515,7 @@ let cloudUser = null;
 let cloudRows = [];
 let cloudReady = false;
 let cloudSaving = false;
-const ledgerEntries = () => book === 'mine' && cloudUser ? cloudRows : data[book];
+const ledgerEntries = () => book === 'mine' ? (cloudUser ? cloudRows : []) : data.demo;
 $('.week').innerHTML=Array.from('一二三四五六日',d=>'<span>周'+d+'</span>').join('');
 $('#categories').innerHTML = categories.map((category, index) =>
  '<label class="category"><input type="radio" name="category" value="' + index + '"' +
@@ -575,6 +576,7 @@ let editingRecord = null;
 let entryId = null;
 let pendingMutation = null;
 function openEntry(index = null) {
+ if(book === 'mine' && !cloudUser){showAccount();accountMessage('登录后即可记账，账目将自动同步。');return;}
  if (book === 'mine' && cloudUser && !cloudReady) {
   $('#sync-status').textContent = '正在连接云端，请稍后再试';
   return;
@@ -600,6 +602,7 @@ $('#addday').onclick = () => openEntry();
 $('#close').onclick = () => dialog.close();
 form.onsubmit = async event => {
  event.preventDefault();
+ if(book === 'mine' && !cloudUser){$('#error').textContent='请先登录后再保存';return;}
  if (!form.reportValidity()) return;
  const fields = new FormData(form);
  const name = fields.get('name').trim();
@@ -834,10 +837,7 @@ function fromCloud(row) {
   c: row.category, revision: row.revision};
 }
 function updateImportButton() {
- const cloudIds = new Set(cloudRows.map(row => row.id));
- const pending = data.mine.filter(row => !cloudIds.has(row.id));
- $('#import-local').hidden = !cloudUser || !cloudReady || pending.length === 0;
- $('#import-local').textContent = '导入本机 ' + pending.length + ' 笔账目';
+ $('#import-local').hidden = true;
 }
 function updateAccount() {
  const accountButton = $('#account');
@@ -887,7 +887,7 @@ function setAccount(user) {
  dialog.close();
  activeCategory = 0;
  $('#category-items').replaceChildren();
- $('#sync-status').textContent = user ? '正在同步…' : '本机保存';
+ $('#sync-status').textContent = user ? '正在同步…' : '登录后同步';
  if (user) {book = 'mine'; selected = new Date();}
  updateAccount();
  render();
@@ -984,37 +984,7 @@ $('#new-password').onsubmit = async event => {
  updateAccount();
  accountMessage('密码已更新');
 };
-$('#import-local').onclick = async () => {
- const account = cloudUser?.id;
- if (!account || cloudSaving) return;
- if (!confirm('将本机账目导入 ' + cloudUser.email + ' 的云端账本？')) return;
- cloudSaving = true;
- refreshSequence++;
- let importFailed = false;
- $('#import-local').disabled = true;
- try {
-  // Save identifiers before uploading so retries cannot duplicate an import.
-  const disk = JSON.parse(localStorage.getItem(storeKey));
-  if (disk?.mine) data.mine = disk.mine.map(entry => ({
-   ...entry,
-   c: disk.categoriesVersion === 2 ? entry.c : entry.name.includes('挂号') ? 1 : entry.c === 1 ? 0 : entry.c
-  }));
-  data.mine = data.mine.map(entry => ({...entry, id:entry.id || crypto.randomUUID()}));
-  save();
-  for (let offset = 0; offset < data.mine.length; offset += 500) {
-   if (account !== cloudUser?.id) throw new Error('Account changed');
-   const {error} = await cloud.rpc('import_ledger_entries', {entries:data.mine.slice(offset,offset+500)});
-   if (error) throw error;
-  }
-  $('#sync-status').textContent = '导入完成';
- } catch {importFailed = true;}
- finally {
-  cloudSaving = false;
-  $('#import-local').disabled = false;
-  await refreshCloud();
-  if (importFailed) $('#sync-status').textContent = '导入未完成，请重试';
- }
-};
+
 if (cloud) {
  cloud.auth.onAuthStateChange((event, session) => {
   // Run outside the auth callback lock.
@@ -1036,7 +1006,7 @@ if (cloud) {
  window.addEventListener('focus', () => void refreshCloud());
  window.addEventListener('online', () => void refreshCloud());
 } else {
- $('#sync-status').textContent = '本机保存 · 登录服务加载失败，请刷新';
+ $('#sync-status').textContent = '登录服务加载失败，请刷新';
 }
 updateAccount();
 </script><script>
@@ -1055,10 +1025,10 @@ function updateProfileMenu(){
  $('#profile-avatar').innerHTML=$('#account').innerHTML;
  $('#profile-name').textContent=email ? email.split('@')[0] : '未登录';
  $('#profile-email').textContent=email || '登录后，账目跨设备同步';
- const rows=cloudUser ? cloudRows : data.mine;
+ const rows=cloudUser ? cloudRows : [];
  const days=new Set(rows.filter(row=>row.date<=key(new Date())).map(row=>row.date)).size;
  $('#journey-days').textContent=cloudUser&&!cloudReady ? '—' : String(days);
- $('#journey-scope').textContent=cloudUser ? (cloudReady ? '云端账本' : '同步中…') : '本机账本';
+ $('#journey-scope').textContent=cloudUser ? (cloudReady ? '云端账本' : '同步中…') : '登录后同步';
  profileMenu.classList.toggle('is-signed-in',!!cloudUser);
  $('#profile-auth').textContent=cloudUser?'退出登录':'登录同步';
 }
